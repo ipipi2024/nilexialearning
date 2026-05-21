@@ -25,7 +25,7 @@ export default async function VerifyPage({ searchParams }: Props) {
       <div className="w-full max-w-sm">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Check your email</h1>
         <p className="text-sm text-gray-500 mb-6">
-          We sent a 6-digit code to <span className="font-medium text-gray-700">{email}</span>.
+          We sent a 8-digit code to <span className="font-medium text-gray-700">{email}</span>.
           Enter it below to confirm your account.
         </p>
 
