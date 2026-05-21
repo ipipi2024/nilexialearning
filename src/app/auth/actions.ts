@@ -22,26 +22,36 @@ export async function login(formData: FormData) {
 
 export async function signup(formData: FormData) {
   const supabase = await createClient()
+  const email = formData.get('email') as string
 
-  const { data, error } = await supabase.auth.signUp({
-    email: formData.get('email') as string,
+  const { error } = await supabase.auth.signUp({
+    email,
     password: formData.get('password') as string,
-    options: {
-      data: {
-        full_name: formData.get('full_name') as string,
-        school: formData.get('school') as string,
-        grade: formData.get('grade') as string,
-      },
-    },
   })
 
   if (error) {
     redirect(`/signup?error=${encodeURIComponent(error.message)}`)
   }
 
-  // Supabase requires email confirmation by default — no session yet
-  if (!data.session) {
-    redirect('/login?message=Check+your+email+to+confirm+your+account.')
+  // Supabase emails a 6-digit OTP — send user to verify page
+  redirect(`/verify?email=${encodeURIComponent(email)}`)
+}
+
+export async function verifyOtp(formData: FormData) {
+  const supabase = await createClient()
+  const email = formData.get('email') as string
+  const token = formData.get('token') as string
+
+  const { error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: 'email',
+  })
+
+  if (error) {
+    redirect(
+      `/verify?email=${encodeURIComponent(email)}&error=${encodeURIComponent(error.message)}`
+    )
   }
 
   revalidatePath('/', 'layout')

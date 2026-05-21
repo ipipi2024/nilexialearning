@@ -12,12 +12,6 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  const meta = user.user_metadata as {
-    full_name?: string
-    school?: string
-    grade?: string
-  }
-
   return (
     <main className="min-h-screen bg-gray-50 px-6 py-12">
       <div className="max-w-xl mx-auto">
@@ -35,18 +29,9 @@ export default async function DashboardPage() {
           </form>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-2">
-          <p className="text-sm text-gray-500">Logged in as</p>
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <p className="text-sm text-gray-500 mb-1">Logged in as</p>
           <p className="font-medium text-gray-900">{user.email}</p>
-          {meta.full_name && (
-            <p className="text-sm text-gray-600">{meta.full_name}</p>
-          )}
-          {meta.school && (
-            <p className="text-sm text-gray-500">{meta.school}</p>
-          )}
-          {meta.grade && (
-            <p className="text-sm text-gray-500">Grade {meta.grade}</p>
-          )}
         </div>
       </div>
     </main>
