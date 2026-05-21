@@ -33,6 +33,13 @@ export default async function DashboardPage() {
           <p className="text-sm text-gray-500 mb-1">Logged in as</p>
           <p className="font-medium text-gray-900">{user.email}</p>
         </div>
+
+        <a
+          href="/practice"
+          className="block bg-blue-600 text-white text-center font-semibold py-3 rounded-xl hover:bg-blue-700 transition-colors"
+        >
+          Browse &amp; Practice Exam Papers →
+        </a>
       </div>
     </main>
   )

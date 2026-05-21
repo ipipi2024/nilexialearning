@@ -30,11 +30,12 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Unauthenticated users cannot access /dashboard or /admin
+  // Unauthenticated users cannot access /dashboard, /admin, or /practice
   if (
     !user &&
     (request.nextUrl.pathname.startsWith('/dashboard') ||
-      request.nextUrl.pathname.startsWith('/admin'))
+      request.nextUrl.pathname.startsWith('/admin') ||
+      request.nextUrl.pathname.startsWith('/practice'))
   ) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
