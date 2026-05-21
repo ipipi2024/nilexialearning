@@ -47,7 +47,7 @@ create table public.sections (
   id             uuid primary key default gen_random_uuid(),
   exam_id        uuid not null references public.exams(id) on delete cascade,
   name           text not null,
-  type           text not null,
+  section_type   text not null,
   marks          int  not null,
   question_start int  not null,
   question_end   int  not null
@@ -94,7 +94,7 @@ create table public.attempts (
   user_id      uuid         not null references auth.users(id) on delete cascade,
   exam_id      uuid         not null references public.exams(id) on delete cascade,
   mode         attempt_mode not null,
-  score        int,                    -- null until submitted
+  score        numeric,                    -- null until submitted
   started_at   timestamptz  default now() not null,
   submitted_at timestamptz             -- null until submitted
 );

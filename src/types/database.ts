@@ -22,7 +22,7 @@ export type Section = {
   id: string
   exam_id: string
   name: string
-  type: string
+  section_type: string
   marks: number
   question_start: number
   question_end: number
