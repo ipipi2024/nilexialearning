@@ -50,9 +50,9 @@ export default async function VerifyPage({ searchParams }: Props) {
               name="token"
               type="text"
               inputMode="numeric"
-              maxLength={6}
+              maxLength={8}
               required
-              placeholder="123456"
+              placeholder="12345678"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
