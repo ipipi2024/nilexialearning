@@ -1,4 +1,11 @@
-export default function Home() {
+import { createClient } from '@/lib/supabase/server'
+
+export default async function Home() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-white px-6">
       <div className="text-center max-w-xl">
@@ -9,7 +16,7 @@ export default function Home() {
           Practice past exam papers online.
         </p>
         <a
-          href="/practice"
+          href={user ? '/dashboard' : '/signup'}
           className="inline-block bg-blue-600 text-white text-base font-semibold px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors"
         >
           Get Started
