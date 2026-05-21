@@ -1,5 +1,8 @@
 import { createExam } from '@/app/admin/actions'
 
+const inputClass =
+  'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+
 export default function NewExamPage() {
   return (
     <div>
@@ -13,10 +16,7 @@ export default function NewExamPage() {
       <div className="bg-white rounded-xl border border-gray-200 p-6 max-w-sm">
         <form action={createExam} className="flex flex-col gap-4">
           <div>
-            <label
-              className="block text-sm font-medium text-gray-700 mb-1"
-              htmlFor="subject"
-            >
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="subject">
               Subject
             </label>
             <input
@@ -24,16 +24,13 @@ export default function NewExamPage() {
               name="subject"
               type="text"
               required
-              placeholder="Mathematics"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Advanced Mathematics"
+              className={inputClass}
             />
           </div>
 
           <div>
-            <label
-              className="block text-sm font-medium text-gray-700 mb-1"
-              htmlFor="year"
-            >
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="year">
               Year
             </label>
             <input
@@ -44,15 +41,43 @@ export default function NewExamPage() {
               min="2000"
               max="2099"
               placeholder="2023"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputClass}
             />
           </div>
 
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="paper_number">
+                Paper Number
+              </label>
+              <input
+                id="paper_number"
+                name="paper_number"
+                type="number"
+                required
+                min="1"
+                placeholder="1"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="paper_type">
+                Paper Type
+              </label>
+              <select
+                id="paper_type"
+                name="paper_type"
+                required
+                className={inputClass}
+              >
+                <option value="objective">Objective</option>
+                <option value="long_response">Long Response</option>
+              </select>
+            </div>
+          </div>
+
           <div>
-            <label
-              className="block text-sm font-medium text-gray-700 mb-1"
-              htmlFor="duration_minutes"
-            >
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="duration_minutes">
               Duration (minutes)
             </label>
             <input
@@ -62,15 +87,12 @@ export default function NewExamPage() {
               required
               min="1"
               placeholder="180"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputClass}
             />
           </div>
 
           <div>
-            <label
-              className="block text-sm font-medium text-gray-700 mb-1"
-              htmlFor="total_marks"
-            >
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="total_marks">
               Total Marks
             </label>
             <input
@@ -80,7 +102,7 @@ export default function NewExamPage() {
               required
               min="1"
               placeholder="100"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputClass}
             />
           </div>
 

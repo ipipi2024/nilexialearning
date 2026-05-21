@@ -10,7 +10,7 @@
 -- ENUMS
 -- =============================================================
 
-create type question_type    as enum ('multiple_choice', 'short_answer');
+create type question_type    as enum ('multiple_choice', 'short_answer', 'long_response');
 create type attempt_mode     as enum ('practice', 'exam');
 create type block_type       as enum ('text', 'image');
 create type self_check_status as enum ('correct', 'incorrect');
@@ -36,6 +36,8 @@ create table public.exams (
   id               uuid        primary key default gen_random_uuid(),
   subject          text        not null,
   year             int         not null,
+  paper_number     int         not null default 1,
+  paper_type       text        not null default 'objective',
   duration_minutes int         not null,
   total_marks      int         not null,
   created_at       timestamptz default now() not null

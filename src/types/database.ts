@@ -13,6 +13,8 @@ export type Exam = {
   id: string
   subject: string
   year: number
+  paper_number: number
+  paper_type: string
   duration_minutes: number
   total_marks: number
   created_at: string
@@ -28,7 +30,7 @@ export type Section = {
   question_end: number
 }
 
-export type QuestionType = 'multiple_choice' | 'short_answer'
+export type QuestionType = 'multiple_choice' | 'short_answer' | 'long_response'
 
 export type Question = {
   id: string

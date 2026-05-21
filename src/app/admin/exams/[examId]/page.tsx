@@ -29,10 +29,10 @@ export default async function ExamPage({ params }: Props) {
           ← Exams
         </a>
         <h1 className="text-xl font-bold text-gray-900 mt-1">
-          {exam.subject} — {exam.year}
+          {exam.subject} — Paper {exam.paper_number} ({exam.year})
         </h1>
         <p className="text-sm text-gray-500 mt-1">
-          {exam.duration_minutes} min · {exam.total_marks} marks
+          {exam.paper_type} · {exam.duration_minutes} min · {exam.total_marks} marks
         </p>
       </div>
 

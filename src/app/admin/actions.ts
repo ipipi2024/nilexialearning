@@ -29,6 +29,8 @@ export async function createExam(formData: FormData) {
     .insert({
       subject: formData.get('subject') as string,
       year: parseInt(formData.get('year') as string),
+      paper_number: parseInt(formData.get('paper_number') as string),
+      paper_type: formData.get('paper_type') as string,
       duration_minutes: parseInt(formData.get('duration_minutes') as string),
       total_marks: parseInt(formData.get('total_marks') as string),
     })

@@ -47,6 +47,7 @@ export function QuestionForm({ examId, sectionId, action }: Props) {
         >
           <option value="multiple_choice">Multiple Choice</option>
           <option value="short_answer">Short Answer</option>
+          <option value="long_response">Long Response</option>
         </select>
       </div>
 

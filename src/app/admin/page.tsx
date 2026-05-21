@@ -33,10 +33,10 @@ export default async function AdminPage() {
                 className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-4 py-3 hover:border-blue-300 transition-colors"
               >
                 <span className="font-medium text-gray-900">
-                  {exam.subject} — {exam.year}
+                  {exam.subject} — Paper {exam.paper_number} ({exam.year})
                 </span>
                 <span className="text-sm text-gray-400">
-                  {exam.total_marks} marks · {exam.duration_minutes} min →
+                  {exam.paper_type} · {exam.total_marks} marks · {exam.duration_minutes} min →
                 </span>
               </a>
             </li>
