@@ -1,6 +1,9 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 import { ExplanationRenderer } from './ExplanationRenderer'
 import { saveAnswer, saveSelfCheck } from '@/app/practice/actions'
 import type { Choice, ExplanationBlock, Question, UserAnswer } from '@/types/database'
@@ -141,7 +144,11 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers }: Pr
             </span>
             <span className="text-xs text-gray-400">{question.marks} mark{question.marks !== 1 ? 's' : ''}</span>
           </div>
-          <p className="text-gray-900 leading-relaxed whitespace-pre-wrap">{question.question_text}</p>
+          <div className="text-gray-900 leading-relaxed prose prose-sm max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+              {question.question_text}
+            </ReactMarkdown>
+          </div>
         </div>
 
         {/* Answer area */}
@@ -170,7 +177,15 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers }: Pr
                   <span className="text-sm font-bold text-gray-500 w-5 shrink-0">
                     {choice.label}
                   </span>
-                  <span className="text-sm text-gray-800">{choice.text}</span>
+                  <span className="text-sm text-gray-800">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkMath]}
+                      rehypePlugins={[rehypeKatex]}
+                      components={{ p: ({ children }) => <>{children}</> }}
+                    >
+                      {choice.text}
+                    </ReactMarkdown>
+                  </span>
                 </button>
               )
             })}
