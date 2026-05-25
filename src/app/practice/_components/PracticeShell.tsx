@@ -127,15 +127,6 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers }: Pr
 
       {/* Question card */}
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
-        {/* Question image */}
-        {question.question_image_url && (
-          <img
-            src={question.question_image_url}
-            alt="Question"
-            className="w-full rounded-xl border border-gray-200"
-          />
-        )}
-
         {/* Question text */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-start justify-between gap-2 mb-3">
@@ -149,6 +140,15 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers }: Pr
               {question.question_text}
             </ReactMarkdown>
           </div>
+          {/* Question image — below text, matching admin view order */}
+          {question.question_image_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={question.question_image_url}
+              alt="Question"
+              className="mt-3 max-w-full h-auto rounded-lg border border-gray-200"
+            />
+          )}
         </div>
 
         {/* Answer area */}

@@ -75,7 +75,7 @@ export default async function QuestionPage({ params }: Props) {
           <img
             src={question.question_image_url}
             alt="Question"
-            className="max-w-sm rounded-lg border border-gray-200 mt-2"
+            className="max-w-full h-auto rounded-lg border border-gray-200 mt-2"
           />
         )}
       </div>
@@ -144,7 +144,7 @@ export default async function QuestionPage({ params }: Props) {
                   <img
                     src={block.content}
                     alt={`Explanation block ${block.block_order}`}
-                    className="max-w-sm rounded-lg border border-gray-200"
+                    className="max-w-full h-auto rounded-lg border border-gray-200"
                   />
                 )}
               </div>
