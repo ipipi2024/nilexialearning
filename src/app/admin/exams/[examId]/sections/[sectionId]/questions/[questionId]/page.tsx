@@ -49,15 +49,25 @@ export default async function QuestionPage({ params }: Props) {
 
       {/* Question card */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-3">
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded">
-            {question.question_type === 'multiple_choice'
-              ? 'Multiple Choice'
-              : 'Short Answer'}
-          </span>
-          <span className="text-xs text-gray-400">
-            {question.marks} mark{question.marks !== 1 ? 's' : ''}
-          </span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded">
+              {question.question_type === 'multiple_choice'
+                ? 'Multiple Choice'
+                : question.question_type === 'short_answer'
+                ? 'Short Answer'
+                : 'Long Response'}
+            </span>
+            <span className="text-xs text-gray-400">
+              {question.marks} mark{question.marks !== 1 ? 's' : ''}
+            </span>
+          </div>
+          <a
+            href={`/admin/exams/${examId}/sections/${sectionId}/questions/${questionId}/edit`}
+            className="text-sm font-medium text-blue-600 hover:text-blue-700"
+          >
+            Edit Question
+          </a>
         </div>
         <p className="text-gray-900 whitespace-pre-wrap">{question.question_text}</p>
         {question.question_image_url && (
@@ -114,9 +124,17 @@ export default async function QuestionPage({ params }: Props) {
                 key={block.id}
                 className="bg-white border border-gray-200 rounded-xl p-4"
               >
-                <span className="text-xs font-medium text-gray-400 mb-2 block">
-                  #{block.block_order} · {block.block_type}
-                </span>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-gray-400">
+                    #{block.block_order} · {block.block_type}
+                  </span>
+                  <a
+                    href={`/admin/exams/${examId}/sections/${sectionId}/questions/${questionId}/explanation-blocks/${block.id}/edit`}
+                    className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                  >
+                    Edit
+                  </a>
+                </div>
                 {block.block_type === 'text' ? (
                   <p className="text-sm text-gray-800 whitespace-pre-wrap">
                     {block.content}

@@ -1,36 +1,78 @@
 'use client'
 
 import { useState } from 'react'
+import type { Choice, QuestionType } from '@/types/database'
+
+type DefaultValues = {
+  number: number
+  question_text: string
+  question_type: QuestionType
+  marks: number
+  question_image_url: string | null
+  choices: Pick<Choice, 'label' | 'text' | 'is_correct'>[]
+}
 
 type Props = {
   examId: string
   sectionId: string
   action: (formData: FormData) => Promise<void>
+  mode?: 'create' | 'edit'
+  defaultValues?: DefaultValues
 }
 
 const inputClass =
   'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
 
-export function QuestionForm({ examId, sectionId, action }: Props) {
-  const [questionType, setQuestionType] = useState('multiple_choice')
+export function QuestionForm({
+  examId,
+  sectionId,
+  action,
+  mode = 'create',
+  defaultValues,
+}: Props) {
+  const [questionType, setQuestionType] = useState<QuestionType>(
+    defaultValues?.question_type ?? 'multiple_choice'
+  )
+  const [correctChoice, setCorrectChoice] = useState(
+    defaultValues?.choices?.find((c) => c.is_correct)?.label ?? 'A'
+  )
 
   return (
     <form action={action} className="flex flex-col gap-4" encType="multipart/form-data">
       <input type="hidden" name="exam_id" value={examId} />
       <input type="hidden" name="section_id" value={sectionId} />
+      {defaultValues?.question_image_url && (
+        <input type="hidden" name="existing_image_url" value={defaultValues.question_image_url} />
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="number">
             Question No.
           </label>
-          <input id="number" name="number" type="number" required min="1" className={inputClass} />
+          <input
+            id="number"
+            name="number"
+            type="number"
+            required
+            min="1"
+            defaultValue={defaultValues?.number}
+            className={inputClass}
+          />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="marks">
             Marks
           </label>
-          <input id="marks" name="marks" type="number" required min="1" className={inputClass} />
+          <input
+            id="marks"
+            name="marks"
+            type="number"
+            required
+            min="1"
+            defaultValue={defaultValues?.marks}
+            className={inputClass}
+          />
         </div>
       </div>
 
@@ -42,7 +84,7 @@ export function QuestionForm({ examId, sectionId, action }: Props) {
           id="question_type"
           name="question_type"
           value={questionType}
-          onChange={(e) => setQuestionType(e.target.value)}
+          onChange={(e) => setQuestionType(e.target.value as QuestionType)}
           className={inputClass}
         >
           <option value="multiple_choice">Multiple Choice</option>
@@ -60,6 +102,7 @@ export function QuestionForm({ examId, sectionId, action }: Props) {
           name="question_text"
           required
           rows={3}
+          defaultValue={defaultValues?.question_text}
           className={inputClass}
         />
       </div>
@@ -69,6 +112,17 @@ export function QuestionForm({ examId, sectionId, action }: Props) {
           Question Image{' '}
           <span className="font-normal text-gray-400">(optional)</span>
         </label>
+        {defaultValues?.question_image_url && (
+          <div className="mb-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={defaultValues.question_image_url}
+              alt="Current question image"
+              className="max-w-xs rounded-lg border border-gray-200"
+            />
+            <p className="text-xs text-gray-400 mt-1">Upload a new image to replace the current one</p>
+          </div>
+        )}
         <input
           id="question_image"
           name="question_image"
@@ -90,6 +144,9 @@ export function QuestionForm({ examId, sectionId, action }: Props) {
                 name={`choice_${label}`}
                 type="text"
                 placeholder={`Choice ${label}`}
+                defaultValue={
+                  defaultValues?.choices?.find((c) => c.label === label)?.text ?? ''
+                }
                 className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -105,6 +162,8 @@ export function QuestionForm({ examId, sectionId, action }: Props) {
             <select
               id="correct_choice"
               name="correct_choice"
+              value={correctChoice}
+              onChange={(e) => setCorrectChoice(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {(['A', 'B', 'C', 'D'] as const).map((l) => (
@@ -119,7 +178,7 @@ export function QuestionForm({ examId, sectionId, action }: Props) {
         type="submit"
         className="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition-colors"
       >
-        Save Question
+        {mode === 'edit' ? 'Save Changes' : 'Save Question'}
       </button>
     </form>
   )

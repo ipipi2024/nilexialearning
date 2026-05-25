@@ -186,3 +186,103 @@ export async function createExplanationBlock(formData: FormData) {
     `/admin/exams/${examId}/sections/${sectionId}/questions/${questionId}`
   )
 }
+
+// ------------------------------------------------------------------
+// Update Question + Choices
+// ------------------------------------------------------------------
+
+export async function updateQuestion(questionId: string, formData: FormData) {
+  const admin = await requireAdmin()
+
+  const examId = formData.get('exam_id') as string
+  const sectionId = formData.get('section_id') as string
+  const questionType = formData.get('question_type') as string
+
+  // Use existing image URL unless a new file is uploaded
+  let imageUrl: string | null = (formData.get('existing_image_url') as string) || null
+  const imageFile = formData.get('question_image') as File | null
+  if (imageFile && imageFile.size > 0) {
+    imageUrl = await uploadToStorage(admin, 'question-images', imageFile)
+  }
+
+  const { error } = await admin
+    .from('questions')
+    .update({
+      number: parseInt(formData.get('number') as string),
+      question_text: formData.get('question_text') as string,
+      question_type: questionType,
+      question_image_url: imageUrl,
+      marks: parseInt(formData.get('marks') as string),
+    })
+    .eq('id', questionId)
+
+  if (error) throw new Error(error.message)
+
+  if (questionType === 'multiple_choice') {
+    const { error: deleteError } = await admin
+      .from('choices')
+      .delete()
+      .eq('question_id', questionId)
+    if (deleteError) throw new Error(deleteError.message)
+
+    const correctLabel = formData.get('correct_choice') as string
+    const choices = (['A', 'B', 'C', 'D'] as const)
+      .map((label) => ({
+        question_id: questionId,
+        label,
+        text: (formData.get(`choice_${label}`) as string | null) ?? '',
+        is_correct: label === correctLabel,
+      }))
+      .filter((c) => c.text.trim() !== '')
+
+    if (choices.length > 0) {
+      const { error: choiceError } = await admin.from('choices').insert(choices)
+      if (choiceError) throw new Error(choiceError.message)
+    }
+  }
+
+  redirect(`/admin/exams/${examId}/sections/${sectionId}/questions/${questionId}`)
+}
+
+// ------------------------------------------------------------------
+// Update Explanation Block
+// ------------------------------------------------------------------
+
+export async function updateExplanationBlock(blockId: string, formData: FormData) {
+  const admin = await requireAdmin()
+
+  const questionId = formData.get('question_id') as string
+  const examId = formData.get('exam_id') as string
+  const sectionId = formData.get('section_id') as string
+  const blockType = formData.get('block_type') as 'text' | 'image'
+  const blockOrder = parseInt(formData.get('block_order') as string)
+
+  let content: string
+
+  if (blockType === 'image') {
+    const imageFile = formData.get('image') as File | null
+    if (imageFile && imageFile.size > 0) {
+      content = await uploadToStorage(
+        admin,
+        'explanation-images',
+        imageFile,
+        `${questionId}/`
+      )
+    } else {
+      const existingContent = formData.get('existing_content') as string | null
+      if (!existingContent) throw new Error('An image file is required for image blocks.')
+      content = existingContent
+    }
+  } else {
+    content = formData.get('content') as string
+  }
+
+  const { error } = await admin
+    .from('explanation_blocks')
+    .update({ block_order: blockOrder, block_type: blockType, content })
+    .eq('id', blockId)
+
+  if (error) throw new Error(error.message)
+
+  redirect(`/admin/exams/${examId}/sections/${sectionId}/questions/${questionId}`)
+}
