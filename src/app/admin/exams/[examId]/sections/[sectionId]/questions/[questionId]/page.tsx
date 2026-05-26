@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createExplanationBlock } from '@/app/admin/actions'
 import { ExplanationBlockForm } from '@/app/admin/_components/ExplanationBlockForm'
+import { AdminQuestionNav } from '@/app/admin/_components/AdminQuestionNav'
 import type { Choice, ExplanationBlock } from '@/types/database'
 
 type Props = {
@@ -11,7 +12,7 @@ export default async function QuestionPage({ params }: Props) {
   const { examId, sectionId, questionId } = await params
   const admin = createAdminClient()
 
-  const [{ data: question }, { data: choices }, { data: blocks }] =
+  const [{ data: question }, { data: choices }, { data: blocks }, { data: sectionQuestions }] =
     await Promise.all([
       admin.from('questions').select('*').eq('id', questionId).single(),
       admin
@@ -24,6 +25,11 @@ export default async function QuestionPage({ params }: Props) {
         .select('*')
         .eq('question_id', questionId)
         .order('block_order'),
+      admin
+        .from('questions')
+        .select('id, number')
+        .eq('section_id', sectionId)
+        .order('number'),
     ])
 
   if (!question) {
@@ -32,17 +38,24 @@ export default async function QuestionPage({ params }: Props) {
 
   const nextBlockOrder = (blocks?.length ?? 0) + 1
 
+  const currentIdx = sectionQuestions?.findIndex((q) => q.id === questionId) ?? -1
+  const previousQuestion = currentIdx > 0 ? sectionQuestions![currentIdx - 1] : null
+  const nextQuestion =
+    sectionQuestions && currentIdx >= 0 && currentIdx < sectionQuestions.length - 1
+      ? sectionQuestions[currentIdx + 1]
+      : null
+
   return (
     <div className="space-y-8">
-      {/* Breadcrumb */}
-      <div>
-        <a
-          href={`/admin/exams/${examId}/sections/${sectionId}`}
-          className="text-sm text-gray-500 hover:text-gray-700"
-        >
-          ← Section
-        </a>
-        <h1 className="text-xl font-bold text-gray-900 mt-1">
+      {/* Breadcrumb + nav */}
+      <div className="space-y-2">
+        <AdminQuestionNav
+          examId={examId}
+          sectionId={sectionId}
+          previousQuestion={previousQuestion}
+          nextQuestion={nextQuestion}
+        />
+        <h1 className="text-xl font-bold text-gray-900">
           Question {question.number}
         </h1>
       </div>

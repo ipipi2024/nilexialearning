@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { updateQuestion } from '@/app/admin/actions'
 import { QuestionForm } from '@/app/admin/_components/QuestionForm'
+import { AdminQuestionNav } from '@/app/admin/_components/AdminQuestionNav'
 
 type Props = {
   params: Promise<{ examId: string; sectionId: string; questionId: string }>
@@ -10,9 +11,10 @@ export default async function EditQuestionPage({ params }: Props) {
   const { examId, sectionId, questionId } = await params
   const admin = createAdminClient()
 
-  const [{ data: question }, { data: choices }] = await Promise.all([
+  const [{ data: question }, { data: choices }, { data: sectionQuestions }] = await Promise.all([
     admin.from('questions').select('*').eq('id', questionId).single(),
     admin.from('choices').select('*').eq('question_id', questionId).order('label'),
+    admin.from('questions').select('id, number').eq('section_id', sectionId).order('number'),
   ])
 
   if (!question) {
@@ -21,16 +23,23 @@ export default async function EditQuestionPage({ params }: Props) {
 
   const action = updateQuestion.bind(null, questionId)
 
+  const currentIdx = sectionQuestions?.findIndex((q) => q.id === questionId) ?? -1
+  const previousQuestion = currentIdx > 0 ? sectionQuestions![currentIdx - 1] : null
+  const nextQuestion =
+    sectionQuestions && currentIdx >= 0 && currentIdx < sectionQuestions.length - 1
+      ? sectionQuestions[currentIdx + 1]
+      : null
+
   return (
     <div>
-      <div className="mb-6">
-        <a
-          href={`/admin/exams/${examId}/sections/${sectionId}/questions/${questionId}`}
-          className="text-sm text-gray-500 hover:text-gray-700"
-        >
-          ← Question {question.number}
-        </a>
-        <h1 className="text-xl font-bold text-gray-900 mt-2">
+      <div className="mb-6 space-y-2">
+        <AdminQuestionNav
+          examId={examId}
+          sectionId={sectionId}
+          previousQuestion={previousQuestion}
+          nextQuestion={nextQuestion}
+        />
+        <h1 className="text-xl font-bold text-gray-900">
           Edit Question {question.number}
         </h1>
       </div>
