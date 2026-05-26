@@ -2,6 +2,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createExplanationBlock } from '@/app/admin/actions'
 import { ExplanationBlockForm } from '@/app/admin/_components/ExplanationBlockForm'
 import { AdminQuestionNav } from '@/app/admin/_components/AdminQuestionNav'
+import { DeleteQuestionButton } from '@/app/admin/_components/DeleteQuestionButton'
 import type { Choice, ExplanationBlock } from '@/types/database'
 
 type Props = {
@@ -75,12 +76,19 @@ export default async function QuestionPage({ params }: Props) {
               {question.marks} mark{question.marks !== 1 ? 's' : ''}
             </span>
           </div>
-          <a
-            href={`/admin/exams/${examId}/sections/${sectionId}/questions/${questionId}/edit`}
-            className="text-sm font-medium text-blue-600 hover:text-blue-700"
-          >
-            Edit Question
-          </a>
+          <div className="flex items-center gap-4">
+            <a
+              href={`/admin/exams/${examId}/sections/${sectionId}/questions/${questionId}/edit`}
+              className="text-sm font-medium text-blue-600 hover:text-blue-700"
+            >
+              Edit Question
+            </a>
+            <DeleteQuestionButton
+              questionId={questionId}
+              examId={examId}
+              sectionId={sectionId}
+            />
+          </div>
         </div>
         <p className="text-gray-900 whitespace-pre-wrap">{question.question_text}</p>
         {question.question_image_url && (

@@ -245,6 +245,24 @@ export async function updateQuestion(questionId: string, formData: FormData) {
 }
 
 // ------------------------------------------------------------------
+// Delete Question
+// ------------------------------------------------------------------
+
+export async function deleteQuestion(formData: FormData) {
+  const admin = await requireAdmin()
+
+  const questionId = formData.get('question_id') as string
+  const examId = formData.get('exam_id') as string
+  const sectionId = formData.get('section_id') as string
+
+  const { error } = await admin.from('questions').delete().eq('id', questionId)
+
+  if (error) throw new Error(error.message)
+
+  redirect(`/admin/exams/${examId}/sections/${sectionId}`)
+}
+
+// ------------------------------------------------------------------
 // Update Explanation Block
 // ------------------------------------------------------------------
 
