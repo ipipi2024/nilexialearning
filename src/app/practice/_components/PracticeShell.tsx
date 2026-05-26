@@ -59,6 +59,7 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
     return s
   })
   const [isPending, startTransition] = useTransition()
+  const [navOpen, setNavOpen] = useState(false)
 
   const question = questions[currentIndex]
   const total = questions.length
@@ -286,45 +287,64 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
         )}
 
         {/* Navigation */}
-        <div className="flex items-center justify-between pt-2">
-          <button
-            onClick={() => navigateTo(Math.max(0, currentIndex - 1))}
-            disabled={currentIndex === 0}
-            className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition-colors"
-          >
-            ← Previous
-          </button>
-
-          {/* Question dots */}
-          <div className="flex gap-1.5">
-            {questions.map((q, i) => {
-              const done = selfChecks[q.id] != null
-              const correct = selfChecks[q.id] === true
-              return (
-                <button
-                  key={q.id}
-                  onClick={() => navigateTo(i)}
-                  className={`w-2.5 h-2.5 rounded-full transition-colors ${
-                    i === currentIndex
-                      ? 'bg-blue-500'
-                      : done
-                      ? correct
-                        ? 'bg-green-400'
-                        : 'bg-red-400'
-                      : 'bg-gray-300'
-                  }`}
-                />
-              )
-            })}
+        <div className="pt-2 space-y-3">
+          {/* Prev / Next row */}
+          <div className="flex items-center justify-between gap-2">
+            <button
+              onClick={() => navigateTo(Math.max(0, currentIndex - 1))}
+              disabled={currentIndex === 0}
+              className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition-colors"
+            >
+              ← Previous
+            </button>
+            <span className="text-xs text-gray-500 shrink-0">
+              {currentIndex + 1} / {total}
+            </span>
+            <button
+              onClick={() => navigateTo(Math.min(total - 1, currentIndex + 1))}
+              disabled={currentIndex === total - 1}
+              className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition-colors"
+            >
+              Next →
+            </button>
           </div>
 
-          <button
-            onClick={() => navigateTo(Math.min(total - 1, currentIndex + 1))}
-            disabled={currentIndex === total - 1}
-            className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition-colors"
-          >
-            Next →
-          </button>
+          {/* Question navigator card */}
+          <div className="bg-white rounded-xl border border-gray-200 p-3">
+            {/* Mobile toggle — hidden on sm+ where grid is always shown */}
+            <button
+              className="sm:hidden w-full flex items-center justify-between text-sm font-medium text-gray-700 py-0.5"
+              onClick={() => setNavOpen((o) => !o)}
+            >
+              <span>Questions</span>
+              <span className="text-gray-400 text-xs">{navOpen ? '▲ Hide' : '▼ Show'}</span>
+            </button>
+
+            {/* Grid: toggle-controlled on mobile, always visible on sm+ */}
+            <div className={`${navOpen ? 'block' : 'hidden'} sm:block mt-2 sm:mt-0`}>
+              <div className="flex flex-wrap gap-1.5">
+                {questions.map((q, i) => {
+                  const answered = answers[q.id] != null
+                  const isCurrent = i === currentIndex
+                  return (
+                    <button
+                      key={q.id}
+                      onClick={() => navigateTo(i)}
+                      className={`w-9 h-9 rounded-lg text-xs font-semibold transition-colors ${
+                        isCurrent
+                          ? 'bg-blue-600 text-white'
+                          : answered
+                          ? 'bg-green-100 text-green-800 border border-green-300'
+                          : 'bg-gray-100 text-gray-500 border border-gray-200 hover:bg-gray-200'
+                      }`}
+                    >
+                      {q.number}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
         </div>
 
         {isPending && (
