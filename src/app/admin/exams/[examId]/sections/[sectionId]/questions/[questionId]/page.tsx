@@ -88,6 +88,12 @@ export default async function QuestionPage({ params }: Props) {
               examId={examId}
               sectionId={sectionId}
             />
+            <a
+              href={`/admin/exams/${examId}/sections/${sectionId}/questions/new?number=${question.number + 1}`}
+              className="text-sm font-medium text-green-600 hover:text-green-700"
+            >
+              + Add Next Question
+            </a>
           </div>
         </div>
         <p className="text-gray-900 whitespace-pre-wrap">{question.question_text}</p>

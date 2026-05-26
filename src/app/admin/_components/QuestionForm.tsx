@@ -18,6 +18,7 @@ type Props = {
   action: (formData: FormData) => Promise<void>
   mode?: 'create' | 'edit'
   defaultValues?: DefaultValues
+  defaultNumber?: number
 }
 
 const inputClass =
@@ -29,6 +30,7 @@ export function QuestionForm({
   action,
   mode = 'create',
   defaultValues,
+  defaultNumber,
 }: Props) {
   const [questionType, setQuestionType] = useState<QuestionType>(
     defaultValues?.question_type ?? 'multiple_choice'
@@ -56,7 +58,7 @@ export function QuestionForm({
             type="number"
             required
             min="1"
-            defaultValue={defaultValues?.number}
+            defaultValue={defaultValues?.number ?? defaultNumber}
             className={inputClass}
           />
         </div>
