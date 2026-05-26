@@ -29,7 +29,7 @@ export function ExplanationRenderer({ blocks }: Props) {
         }
 
         return (
-          <div key={block.id} className="prose prose-sm max-w-none text-gray-700 break-words overflow-x-hidden">
+          <div key={block.id} className="prose prose-sm max-w-none text-gray-700 break-words">
             <ReactMarkdown
               remarkPlugins={[remarkMath]}
               rehypePlugins={[rehypeKatex]}

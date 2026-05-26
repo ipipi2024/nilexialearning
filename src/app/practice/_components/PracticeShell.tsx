@@ -135,7 +135,7 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers }: Pr
             </span>
             <span className="text-xs text-gray-400">{question.marks} mark{question.marks !== 1 ? 's' : ''}</span>
           </div>
-          <div className="text-gray-900 leading-relaxed prose prose-sm max-w-none break-words overflow-x-hidden">
+          <div className="text-gray-900 leading-relaxed prose prose-sm max-w-none break-words">
             <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
               {question.question_text}
             </ReactMarkdown>
