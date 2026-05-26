@@ -43,12 +43,20 @@ export default async function SectionPage({ params }: Props) {
       <div>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-base font-semibold text-gray-900">Questions</h2>
-          <a
-            href={`/admin/exams/${examId}/sections/${sectionId}/questions/new`}
-            className="bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            + Add Question
-          </a>
+          <div className="flex items-center gap-2">
+            <a
+              href={`/admin/exams/${examId}/sections/${sectionId}/ai-import`}
+              className="text-sm font-semibold px-4 py-2 rounded-lg border border-purple-300 text-purple-700 hover:bg-purple-50 transition-colors"
+            >
+              AI Import
+            </a>
+            <a
+              href={`/admin/exams/${examId}/sections/${sectionId}/questions/new`}
+              className="bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              + Add Question
+            </a>
+          </div>
         </div>
 
         {!questions?.length ? (

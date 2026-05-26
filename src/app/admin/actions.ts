@@ -315,6 +315,76 @@ export async function deleteQuestion(formData: FormData) {
 }
 
 // ------------------------------------------------------------------
+// Save AI-Imported Questions
+// ------------------------------------------------------------------
+
+export async function saveImportedQuestions(formData: FormData) {
+  const admin = await requireAdmin()
+
+  const examId = formData.get('exam_id') as string
+  const sectionId = formData.get('section_id') as string
+  const questionsJson = formData.get('questions_json') as string
+
+  type DraftChoice = { label: string; text: string; is_correct: boolean }
+  type DraftQuestion = {
+    number: number
+    question_type: 'multiple_choice'
+    question_text: string
+    choices: DraftChoice[]
+    explanation: string
+  }
+
+  let drafts: DraftQuestion[]
+  try {
+    drafts = JSON.parse(questionsJson)
+  } catch {
+    throw new Error('Invalid question data — could not parse JSON')
+  }
+
+  for (const draft of drafts) {
+    const { data: question, error: qErr } = await admin
+      .from('questions')
+      .insert({
+        exam_id: examId,
+        section_id: sectionId,
+        number: draft.number,
+        question_text: draft.question_text,
+        question_type: 'multiple_choice',
+        question_image_url: null,
+        marks: 1,
+      })
+      .select('id')
+      .single()
+
+    if (qErr) throw new Error(qErr.message)
+
+    if (draft.choices?.length) {
+      const { error: cErr } = await admin.from('choices').insert(
+        draft.choices.map((c) => ({
+          question_id: question.id,
+          label: c.label,
+          text: c.text,
+          is_correct: c.is_correct,
+        }))
+      )
+      if (cErr) throw new Error(cErr.message)
+    }
+
+    if (draft.explanation?.trim()) {
+      const { error: bErr } = await admin.from('explanation_blocks').insert({
+        question_id: question.id,
+        block_order: 1,
+        block_type: 'text',
+        content: draft.explanation,
+      })
+      if (bErr) throw new Error(bErr.message)
+    }
+  }
+
+  redirect(`/admin/exams/${examId}/sections/${sectionId}`)
+}
+
+// ------------------------------------------------------------------
 // Update Explanation Block
 // ------------------------------------------------------------------
 

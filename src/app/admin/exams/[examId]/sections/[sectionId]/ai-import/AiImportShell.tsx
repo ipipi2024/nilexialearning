@@ -1,0 +1,353 @@
+'use client'
+
+import { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+import { saveImportedQuestions } from '@/app/admin/actions'
+
+type DraftChoice = { label: string; text: string; is_correct: boolean }
+
+type DraftQuestion = {
+  number: number
+  question_type: 'multiple_choice'
+  question_text: string
+  choices: DraftChoice[]
+  explanation: string
+  needs_review?: boolean
+}
+
+type Props = {
+  examId: string
+  sectionId: string
+  existingNumbers: number[]
+}
+
+function Md({ text }: { text: string }) {
+  return (
+    <div className="text-sm text-gray-900 leading-relaxed break-words min-w-0">
+      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+        {text}
+      </ReactMarkdown>
+    </div>
+  )
+}
+
+const inputCls =
+  'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500'
+
+function DraftCard({
+  draft,
+  index,
+  isDuplicate,
+  onChange,
+  onRemove,
+}: {
+  draft: DraftQuestion
+  index: number
+  isDuplicate: boolean
+  onChange: (updated: DraftQuestion) => void
+  onRemove: () => void
+}) {
+  const set = (field: keyof DraftQuestion, value: unknown) =>
+    onChange({ ...draft, [field]: value })
+
+  const setChoiceText = (label: string, text: string) =>
+    onChange({
+      ...draft,
+      choices: draft.choices.map((c) => (c.label === label ? { ...c, text } : c)),
+    })
+
+  const setCorrect = (label: string) =>
+    onChange({
+      ...draft,
+      choices: draft.choices.map((c) => ({ ...c, is_correct: c.label === label })),
+    })
+
+  return (
+    <div
+      className={`bg-white border rounded-xl p-5 space-y-5 ${
+        isDuplicate ? 'border-amber-400' : 'border-gray-200'
+      }`}
+    >
+      {/* Card header */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-bold text-gray-700">Q{draft.number}</span>
+          {draft.needs_review && (
+            <span className="text-xs font-medium bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">
+              Needs Review
+            </span>
+          )}
+          {isDuplicate && (
+            <span className="text-xs font-medium bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+              ⚠ Number already exists — change it below
+            </span>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="text-xs text-red-500 hover:text-red-700 font-medium shrink-0"
+        >
+          Remove
+        </button>
+      </div>
+
+      {/* Edit fields */}
+      <div className="space-y-4">
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">Question No.</label>
+          <input
+            type="number"
+            min="1"
+            value={draft.number}
+            onChange={(e) => set('number', parseInt(e.target.value) || draft.number)}
+            className="w-24 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">Question Text</label>
+          <textarea
+            rows={3}
+            value={draft.question_text}
+            onChange={(e) => set('question_text', e.target.value)}
+            className={inputCls}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-xs font-medium text-gray-500">
+            Choices — select the correct answer with the radio button
+          </label>
+          {draft.choices.map((c) => (
+            <div key={c.label} className="flex items-center gap-2">
+              <input
+                type="radio"
+                name={`correct-${index}`}
+                checked={c.is_correct}
+                onChange={() => setCorrect(c.label)}
+                className="shrink-0 accent-green-600"
+                title={`Mark ${c.label} as correct`}
+              />
+              <span className="text-xs font-bold text-gray-500 w-4 shrink-0">{c.label}</span>
+              <input
+                type="text"
+                value={c.text}
+                onChange={(e) => setChoiceText(c.label, e.target.value)}
+                className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          ))}
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">Explanation</label>
+          <textarea
+            rows={4}
+            value={draft.explanation}
+            onChange={(e) => set('explanation', e.target.value)}
+            className={inputCls}
+          />
+        </div>
+      </div>
+
+      {/* Rendered preview */}
+      <div className="border-t border-gray-100 pt-4 space-y-3">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+          Student Preview
+        </p>
+
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+          <Md text={draft.question_text} />
+        </div>
+
+        <ul className="space-y-1.5">
+          {draft.choices.map((c) => (
+            <li
+              key={c.label}
+              className={`flex items-start gap-2 rounded-xl border px-3 py-2 ${
+                c.is_correct
+                  ? 'bg-green-50 border-green-300'
+                  : 'bg-white border-gray-200'
+              }`}
+            >
+              <span className="text-xs font-bold text-gray-500 mt-0.5 shrink-0">{c.label}</span>
+              <div className="flex-1 min-w-0">
+                <Md text={c.text} />
+              </div>
+              {c.is_correct && (
+                <span className="text-xs text-green-600 font-medium shrink-0 mt-0.5">✓</span>
+              )}
+            </li>
+          ))}
+        </ul>
+
+        {draft.explanation && (
+          <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+            <p className="text-xs font-semibold text-blue-600 mb-2">Explanation</p>
+            <Md text={draft.explanation} />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export function AiImportShell({ examId, sectionId, existingNumbers }: Props) {
+  const [step, setStep] = useState<'upload' | 'preview'>('upload')
+  const [drafts, setDrafts] = useState<DraftQuestion[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const existingSet = new Set(existingNumbers)
+  const hasDuplicates = drafts.some((d) => existingSet.has(d.number))
+
+  async function handleGenerate(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const fileInput = (e.currentTarget.elements.namedItem('image') as HTMLInputElement)
+    const file = fileInput.files?.[0]
+    if (!file) return
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const body = new FormData()
+      body.append('image', file)
+
+      const res = await fetch('/api/admin/ai-import', { method: 'POST', body })
+      const json = await res.json()
+
+      if (!res.ok) throw new Error(json.error ?? 'Failed to generate questions')
+      if (!Array.isArray(json.questions) || json.questions.length === 0) {
+        throw new Error('No questions were extracted from the image.')
+      }
+
+      setDrafts(json.questions as DraftQuestion[])
+      setStep('preview')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  function updateDraft(index: number, updated: DraftQuestion) {
+    setDrafts((prev) => prev.map((d, i) => (i === index ? updated : d)))
+  }
+
+  function removeDraft(index: number) {
+    setDrafts((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* ── Upload step ── */}
+      {step === 'upload' && (
+        <div className="bg-white rounded-xl border border-gray-200 p-6 max-w-lg">
+          <h2 className="text-base font-semibold text-gray-900 mb-1">Upload Exam Screenshot</h2>
+          <p className="text-sm text-gray-500 mb-5">
+            AI will extract questions and generate draft data for your review.
+          </p>
+
+          {error && (
+            <div className="mb-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleGenerate} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Screenshot Image
+              </label>
+              <input
+                name="image"
+                type="file"
+                accept="image/*"
+                required
+                className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-gray-300 file:text-sm file:font-medium file:bg-white file:text-gray-700 hover:file:bg-gray-50"
+              />
+              <p className="text-xs text-gray-400 mt-1">PNG, JPEG, or WEBP. Max ~10 MB.</p>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60 text-sm"
+            >
+              {isLoading ? 'Generating… this may take 10–20 seconds' : 'Generate Questions'}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* ── Preview / edit step ── */}
+      {step === 'preview' && (
+        <>
+          {/* Summary bar */}
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-gray-900">
+                {drafts.length} question{drafts.length !== 1 ? 's' : ''} extracted — review and
+                edit before saving
+              </p>
+              {hasDuplicates && (
+                <p className="text-xs text-amber-700 mt-0.5">
+                  Some numbers already exist in this section. Edit them before saving.
+                </p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setStep('upload')
+                setDrafts([])
+                setError(null)
+              }}
+              className="text-sm text-gray-500 hover:text-gray-700 shrink-0"
+            >
+              ← Start over
+            </button>
+          </div>
+
+          {drafts.length === 0 ? (
+            <p className="text-sm text-gray-500">All questions removed.</p>
+          ) : (
+            <div className="space-y-6">
+              {drafts.map((draft, i) => (
+                <DraftCard
+                  key={i}
+                  draft={draft}
+                  index={i}
+                  isDuplicate={existingSet.has(draft.number)}
+                  onChange={(updated) => updateDraft(i, updated)}
+                  onRemove={() => removeDraft(i)}
+                />
+              ))}
+            </div>
+          )}
+
+          {drafts.length > 0 && (
+            <form action={saveImportedQuestions}>
+              <input type="hidden" name="exam_id" value={examId} />
+              <input type="hidden" name="section_id" value={sectionId} />
+              <input type="hidden" name="questions_json" value={JSON.stringify(drafts)} />
+              <button
+                type="submit"
+                disabled={hasDuplicates}
+                className="w-full bg-green-600 text-white font-semibold py-3 rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                {hasDuplicates
+                  ? 'Fix duplicate question numbers before saving'
+                  : `Save ${drafts.length} Approved Question${drafts.length !== 1 ? 's' : ''}`}
+              </button>
+            </form>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
