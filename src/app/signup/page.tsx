@@ -1,16 +1,25 @@
 import { signup } from '@/app/auth/actions'
 
 type Props = {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; existing?: string }>
 }
 
 export default async function SignupPage({ searchParams }: Props) {
-  const { error } = await searchParams
+  const { error, existing } = await searchParams
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-white px-6">
       <div className="w-full max-w-sm">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Create Account</h1>
+
+        {existing && (
+          <div className="mb-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+            An account with this email already exists.{' '}
+            <a href="/login" className="font-semibold underline hover:text-amber-900">
+              Please log in instead.
+            </a>
+          </div>
+        )}
 
         {error && (
           <p className="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">

@@ -16,7 +16,7 @@ export default async function Home() {
           Practice past exam papers online.
         </p>
         <a
-          href={user ? '/dashboard' : '/signup'}
+          href={user ? '/dashboard' : '/login'}
           className="inline-block bg-blue-600 text-white text-base font-semibold px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors"
         >
           Get Started

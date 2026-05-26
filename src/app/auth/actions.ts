@@ -24,7 +24,7 @@ export async function signup(formData: FormData) {
   const supabase = await createClient()
   const email = formData.get('email') as string
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password: formData.get('password') as string,
   })
@@ -33,7 +33,12 @@ export async function signup(formData: FormData) {
     redirect(`/signup?error=${encodeURIComponent(error.message)}`)
   }
 
-  // Supabase emails a 6-digit OTP — send user to verify page
+  // Supabase silently "succeeds" for already-registered emails but returns
+  // an empty identities array and sends no OTP — detect and surface this.
+  if (!data.user || data.user.identities?.length === 0) {
+    redirect('/signup?existing=1')
+  }
+
   redirect(`/verify?email=${encodeURIComponent(email)}`)
 }
 
