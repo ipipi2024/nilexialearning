@@ -248,6 +248,21 @@ export async function updateQuestion(questionId: string, formData: FormData) {
 // Delete Question
 // ------------------------------------------------------------------
 
+// Extracts the object path from a Supabase Storage public URL.
+// e.g. "https://xxx.supabase.co/storage/v1/object/public/question-images/foo.png"
+//   → "foo.png"
+function getStoragePathFromPublicUrl(url: string, bucket: string): string | null {
+  try {
+    const marker = `/storage/v1/object/public/${bucket}/`
+    const idx = url.indexOf(marker)
+    if (idx === -1) return null
+    const path = url.slice(idx + marker.length)
+    return path || null
+  } catch {
+    return null
+  }
+}
+
 export async function deleteQuestion(formData: FormData) {
   const admin = await requireAdmin()
 
@@ -255,8 +270,45 @@ export async function deleteQuestion(formData: FormData) {
   const examId = formData.get('exam_id') as string
   const sectionId = formData.get('section_id') as string
 
-  const { error } = await admin.from('questions').delete().eq('id', questionId)
+  // Fetch image URLs before the cascade delete removes the rows.
+  const [{ data: question }, { data: imageBlocks }] = await Promise.all([
+    admin
+      .from('questions')
+      .select('question_image_url')
+      .eq('id', questionId)
+      .single(),
+    admin
+      .from('explanation_blocks')
+      .select('content')
+      .eq('question_id', questionId)
+      .eq('block_type', 'image'),
+  ])
 
+  // Build storage remove calls. Use allSettled so a missing/malformed file
+  // never prevents the database row from being deleted.
+  const storageOps: Promise<unknown>[] = []
+
+  if (question?.question_image_url) {
+    const path = getStoragePathFromPublicUrl(
+      question.question_image_url,
+      'question-images'
+    )
+    if (path) {
+      storageOps.push(admin.storage.from('question-images').remove([path]))
+    }
+  }
+
+  for (const block of imageBlocks ?? []) {
+    const path = getStoragePathFromPublicUrl(block.content, 'explanation-images')
+    if (path) {
+      storageOps.push(admin.storage.from('explanation-images').remove([path]))
+    }
+  }
+
+  await Promise.allSettled(storageOps)
+
+  // Delete the row — cascades to choices, explanation_blocks, user_answers.
+  const { error } = await admin.from('questions').delete().eq('id', questionId)
   if (error) throw new Error(error.message)
 
   redirect(`/admin/exams/${examId}/sections/${sectionId}`)
