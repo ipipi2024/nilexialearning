@@ -135,10 +135,12 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers }: Pr
             </span>
             <span className="text-xs text-gray-400">{question.marks} mark{question.marks !== 1 ? 's' : ''}</span>
           </div>
-          <div className="text-gray-900 leading-relaxed prose prose-sm max-w-none break-words">
-            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-              {question.question_text}
-            </ReactMarkdown>
+          <div className="overflow-x-auto">
+            <div className="text-gray-900 leading-relaxed prose prose-sm max-w-none break-words min-w-0">
+              <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                {question.question_text}
+              </ReactMarkdown>
+            </div>
           </div>
           {/* Question image — below text, matching admin view order */}
           {question.question_image_url && (
