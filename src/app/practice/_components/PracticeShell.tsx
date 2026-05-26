@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
@@ -24,10 +25,18 @@ type Props = {
   }
   questions: QuestionWithExtras[]
   initialAnswers: UserAnswer[]
+  initialQuestionNumber?: number
 }
 
-export function PracticeShell({ attemptId, exam, questions, initialAnswers }: Props) {
-  const [currentIndex, setCurrentIndex] = useState(0)
+export function PracticeShell({ attemptId, exam, questions, initialAnswers, initialQuestionNumber }: Props) {
+  const router = useRouter()
+  const pathname = usePathname()
+
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    if (!initialQuestionNumber) return 0
+    const idx = questions.findIndex((q) => q.number === initialQuestionNumber)
+    return idx >= 0 ? idx : 0
+  })
   const [answers, setAnswers] = useState<Record<string, string>>(() => {
     const map: Record<string, string> = {}
     for (const a of initialAnswers) {
@@ -91,6 +100,11 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers }: Pr
     startTransition(async () => {
       await saveSelfCheck(attemptId, question.id, isCorrect)
     })
+  }
+
+  function navigateTo(index: number) {
+    setCurrentIndex(index)
+    router.replace(`${pathname}?q=${questions[index].number}`)
   }
 
   const selfCheck = selfChecks[question.id]
@@ -274,7 +288,7 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers }: Pr
         {/* Navigation */}
         <div className="flex items-center justify-between pt-2">
           <button
-            onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
+            onClick={() => navigateTo(Math.max(0, currentIndex - 1))}
             disabled={currentIndex === 0}
             className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition-colors"
           >
@@ -289,7 +303,7 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers }: Pr
               return (
                 <button
                   key={q.id}
-                  onClick={() => setCurrentIndex(i)}
+                  onClick={() => navigateTo(i)}
                   className={`w-2.5 h-2.5 rounded-full transition-colors ${
                     i === currentIndex
                       ? 'bg-blue-500'
@@ -305,7 +319,7 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers }: Pr
           </div>
 
           <button
-            onClick={() => setCurrentIndex((i) => Math.min(total - 1, i + 1))}
+            onClick={() => navigateTo(Math.min(total - 1, currentIndex + 1))}
             disabled={currentIndex === total - 1}
             className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition-colors"
           >

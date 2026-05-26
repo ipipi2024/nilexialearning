@@ -3,15 +3,19 @@ import { createClient } from '@/lib/supabase/server'
 import { PracticeShell } from '@/app/practice/_components/PracticeShell'
 import type { Question, Choice, ExplanationBlock, UserAnswer } from '@/types/database'
 
-type Props = { params: Promise<{ attemptId: string }> }
+type Props = {
+  params: Promise<{ attemptId: string }>
+  searchParams: Promise<{ q?: string }>
+}
 
 type QuestionWithExtras = Question & {
   choices: Choice[]
   explanation_blocks: ExplanationBlock[]
 }
 
-export default async function PracticeAttemptPage({ params }: Props) {
+export default async function PracticeAttemptPage({ params, searchParams }: Props) {
   const { attemptId } = await params
+  const { q } = await searchParams
   const supabase = await createClient()
 
   const {
@@ -71,12 +75,15 @@ export default async function PracticeAttemptPage({ params }: Props) {
     total_marks: number
   }
 
+  const initialQuestionNumber = q ? parseInt(q, 10) : undefined
+
   return (
     <PracticeShell
       attemptId={attemptId}
       exam={exam}
       questions={questionsWithSortedBlocks}
       initialAnswers={(existingAnswers ?? []) as UserAnswer[]}
+      initialQuestionNumber={initialQuestionNumber}
     />
   )
 }
