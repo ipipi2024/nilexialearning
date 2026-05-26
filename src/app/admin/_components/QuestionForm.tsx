@@ -72,7 +72,7 @@ export function QuestionForm({
             type="number"
             required
             min="1"
-            defaultValue={defaultValues?.marks}
+            defaultValue={defaultValues?.marks ?? 1}
             className={inputClass}
           />
         </div>
