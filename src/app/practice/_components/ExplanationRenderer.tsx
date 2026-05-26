@@ -23,13 +23,13 @@ export function ExplanationRenderer({ blocks }: Props) {
               key={block.id}
               src={block.content}
               alt="Explanation"
-              className="max-w-full rounded-lg border border-gray-200"
+              className="max-w-full h-auto rounded-lg border border-gray-200"
             />
           )
         }
 
         return (
-          <div key={block.id} className="prose prose-sm max-w-none text-gray-700">
+          <div key={block.id} className="prose prose-sm max-w-none text-gray-700 break-words overflow-x-hidden">
             <ReactMarkdown
               remarkPlugins={[remarkMath]}
               rehypePlugins={[rehypeKatex]}

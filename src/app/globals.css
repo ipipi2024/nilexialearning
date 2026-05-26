@@ -24,3 +24,12 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* KaTeX display math: scroll horizontally inside its own box instead of
+   pushing the page wider. overflow-y: hidden hides the phantom descender
+   gap some browsers add when overflow-x is set. */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+}
