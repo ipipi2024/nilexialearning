@@ -8,9 +8,11 @@ type Variant = 'question' | 'choice' | 'explanation'
 // (w-auto keeps natural size when smaller than the max), and the zoom modal
 // always shows the original at full resolution.
 const thumbnailClass: Record<Variant, string> = {
-  question:    'block mx-auto w-auto h-auto max-w-[420px] max-h-[320px] object-contain',
+  // max-w-full ensures the image never overflows its container on any screen width.
+  // max-h caps the display size on wide screens without forcing a fixed width.
+  question:    'block mx-auto w-auto h-auto max-w-full max-h-[320px] object-contain',
   choice:      'block mx-auto w-auto h-auto max-w-[220px] max-h-[160px] object-contain',
-  explanation: 'block mx-auto w-auto h-auto max-w-[480px] max-h-[360px] object-contain',
+  explanation: 'block mx-auto w-auto h-auto max-w-full max-h-[360px] object-contain',
 }
 
 type Props = {
