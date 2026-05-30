@@ -73,7 +73,7 @@ export function ZoomableImage({ src, alt, className }: Props) {
             <img
               src={src}
               alt={alt}
-              className="max-w-full h-auto object-contain rounded-lg"
+              className="max-w-full h-auto object-contain"
               style={{ touchAction: 'auto' }}
             />
           </div>

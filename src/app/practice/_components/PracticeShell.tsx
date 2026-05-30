@@ -163,7 +163,7 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
             <ZoomableImage
               src={question.question_image_url}
               alt="Question diagram"
-              className="mt-3 max-w-full h-auto rounded-lg border border-gray-200 cursor-zoom-in"
+              className="mt-3 max-w-full h-auto cursor-zoom-in"
             />
           )}
         </div>
@@ -216,7 +216,7 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
                         <ZoomableImage
                           src={choice.choice_image_url}
                           alt={`Choice ${choice.label} diagram`}
-                          className="max-w-full h-auto object-contain rounded-lg border border-gray-200 cursor-zoom-in"
+                          className="max-w-full h-auto object-contain cursor-zoom-in"
                         />
                       </span>
                     )}

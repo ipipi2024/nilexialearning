@@ -24,7 +24,7 @@ export function ExplanationRenderer({ blocks }: Props) {
               key={block.id}
               src={block.content}
               alt="Explanation diagram"
-              className="max-w-full h-auto rounded-lg border border-gray-200 cursor-zoom-in"
+              className="max-w-full h-auto cursor-zoom-in"
             />
           )
         }
