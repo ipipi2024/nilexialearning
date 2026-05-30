@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { BlockType } from '@/types/database'
+import { ImageInput } from './ImageInput'
 
 type DefaultValues = {
   block_order: number
@@ -101,33 +102,14 @@ export function ExplanationBlockForm({
           />
         </div>
       ) : (
-        <div>
-          <label
-            className="block text-xs font-medium text-gray-700 mb-1"
-            htmlFor="image"
-          >
-            Image File
-          </label>
-          {defaultValues?.block_type === 'image' && (
-            <div className="mb-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={defaultValues.content}
-                alt="Current explanation image"
-                className="max-w-xs rounded-lg border border-gray-200"
-              />
-              <p className="text-xs text-gray-400 mt-1">Upload a new image to replace the current one</p>
-            </div>
-          )}
-          <input
-            id="image"
-            name="image"
-            type="file"
-            accept="image/*"
-            required={mode === 'create'}
-            className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-gray-300 file:text-sm file:font-medium file:bg-white file:text-gray-700 hover:file:bg-gray-50"
-          />
-        </div>
+        <ImageInput
+          name="image"
+          label="Image File"
+          optional={mode !== 'create'}
+          existingImageUrl={
+            defaultValues?.block_type === 'image' ? defaultValues.content : null
+          }
+        />
       )}
 
       <button

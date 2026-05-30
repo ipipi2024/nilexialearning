@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { Choice, QuestionType } from '@/types/database'
+import { ImageInput } from './ImageInput'
 
 type DefaultValues = {
   number: number
@@ -109,30 +110,11 @@ export function QuestionForm({
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="question_image">
-          Question Image{' '}
-          <span className="font-normal text-gray-400">(optional)</span>
-        </label>
-        {defaultValues?.question_image_url && (
-          <div className="mb-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={defaultValues.question_image_url}
-              alt="Current question image"
-              className="max-w-xs rounded-lg border border-gray-200"
-            />
-            <p className="text-xs text-gray-400 mt-1">Upload a new image to replace the current one</p>
-          </div>
-        )}
-        <input
-          id="question_image"
-          name="question_image"
-          type="file"
-          accept="image/*"
-          className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-gray-300 file:text-sm file:font-medium file:bg-white file:text-gray-700 hover:file:bg-gray-50"
-        />
-      </div>
+      <ImageInput
+        name="question_image"
+        label="Question Image"
+        existingImageUrl={defaultValues?.question_image_url}
+      />
 
       {/* Choices — only shown for multiple choice */}
       {questionType === 'multiple_choice' && (
@@ -153,23 +135,11 @@ export function QuestionForm({
                     className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                <div className="pl-7 space-y-1">
-                  {existing?.choice_image_url && (
-                    <div className="mb-1.5">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={existing.choice_image_url}
-                        alt={`Current Choice ${label} image`}
-                        className="max-w-xs rounded-lg border border-gray-200"
-                      />
-                      <p className="text-xs text-gray-400 mt-1">Upload a new image to replace</p>
-                    </div>
-                  )}
-                  <input
+                <div className="pl-7">
+                  <ImageInput
                     name={`choice_image_${label}`}
-                    type="file"
-                    accept="image/*"
-                    className="w-full text-sm text-gray-500 file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border file:border-gray-300 file:text-xs file:font-medium file:bg-white file:text-gray-700 hover:file:bg-gray-50"
+                    label={`Choice ${label} image`}
+                    existingImageUrl={existing?.choice_image_url}
                   />
                 </div>
               </div>
