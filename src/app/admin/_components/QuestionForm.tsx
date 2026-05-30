@@ -25,6 +25,10 @@ type Props = {
 const inputClass =
   'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
 
+function defaultTypeForNumber(n: number | undefined): QuestionType {
+  return n !== undefined && n >= 31 ? 'short_answer' : 'multiple_choice'
+}
+
 export function QuestionForm({
   examId,
   sectionId,
@@ -34,11 +38,24 @@ export function QuestionForm({
   defaultNumber,
 }: Props) {
   const [questionType, setQuestionType] = useState<QuestionType>(
-    defaultValues?.question_type ?? 'multiple_choice'
+    defaultValues?.question_type ?? defaultTypeForNumber(defaultNumber)
   )
   const [correctChoice, setCorrectChoice] = useState(
     defaultValues?.choices?.find((c) => c.is_correct)?.label ?? 'A'
   )
+  // Once the user manually picks a type we stop auto-updating it on number change.
+  const [typeOverridden, setTypeOverridden] = useState(false)
+
+  function handleTypeChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    setQuestionType(e.target.value as QuestionType)
+    setTypeOverridden(true)
+  }
+
+  function handleNumberChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (mode !== 'create' || typeOverridden) return
+    const n = parseInt(e.target.value)
+    if (!isNaN(n)) setQuestionType(defaultTypeForNumber(n))
+  }
 
   return (
     <form action={action} className="flex flex-col gap-4" encType="multipart/form-data">
@@ -60,6 +77,7 @@ export function QuestionForm({
             required
             min="1"
             defaultValue={defaultValues?.number ?? defaultNumber}
+            onChange={handleNumberChange}
             className={inputClass}
           />
         </div>
@@ -87,13 +105,18 @@ export function QuestionForm({
           id="question_type"
           name="question_type"
           value={questionType}
-          onChange={(e) => setQuestionType(e.target.value as QuestionType)}
+          onChange={handleTypeChange}
           className={inputClass}
         >
           <option value="multiple_choice">Multiple Choice</option>
           <option value="short_answer">Short Answer</option>
           <option value="long_response">Long Response</option>
         </select>
+        {mode === 'create' && (
+          <p className="text-xs text-gray-400 mt-1">
+            Q1–30 → Multiple Choice &nbsp;·&nbsp; Q31–50 → Short Answer
+          </p>
+        )}
       </div>
 
       <div>
