@@ -120,16 +120,26 @@ export default async function QuestionPage({ params }: Props) {
               {choices.map((c: Choice) => (
                 <li
                   key={c.id}
-                  className={`flex items-center gap-3 rounded-lg border px-4 py-2.5 ${
+                  className={`flex items-start gap-3 rounded-lg border px-4 py-2.5 ${
                     c.is_correct
                       ? 'border-green-300 bg-green-50'
                       : 'border-gray-200 bg-white'
                   }`}
                 >
-                  <span className="font-semibold text-gray-600 w-4">{c.label}</span>
-                  <span className="text-sm text-gray-900 flex-1">{c.text}</span>
+                  <span className="font-semibold text-gray-600 w-4 shrink-0 mt-0.5">{c.label}</span>
+                  <span className="text-sm text-gray-900 flex-1 min-w-0">
+                    {c.text && <span className="block">{c.text}</span>}
+                    {c.choice_image_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={c.choice_image_url}
+                        alt={`Choice ${c.label}`}
+                        className={`max-w-xs h-auto rounded-lg border border-gray-200${c.text ? ' mt-2' : ''}`}
+                      />
+                    )}
+                  </span>
                   {c.is_correct && (
-                    <span className="text-xs text-green-600 font-medium">✓ Correct</span>
+                    <span className="text-xs text-green-600 font-medium shrink-0">✓ Correct</span>
                   )}
                 </li>
               ))}

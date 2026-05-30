@@ -189,19 +189,31 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
                   key={choice.id}
                   onClick={() => handleMCSelect(choice.label)}
                   disabled={isRevealed}
-                  className={`w-full flex items-center gap-3 bg-white border rounded-xl px-4 py-3 text-left transition-colors ${borderColor}`}
+                  className={`w-full flex items-start gap-3 bg-white border rounded-xl px-4 py-3 text-left transition-colors ${borderColor}`}
                 >
-                  <span className="text-sm font-bold text-gray-500 w-5 shrink-0">
+                  <span className="text-sm font-bold text-gray-500 w-5 shrink-0 mt-0.5">
                     {choice.label}
                   </span>
-                  <span className="text-sm text-gray-800">
-                    <ReactMarkdown
-                      remarkPlugins={[remarkMath]}
-                      rehypePlugins={[rehypeKatex]}
-                      components={{ p: ({ children }) => <>{children}</> }}
-                    >
-                      {choice.text}
-                    </ReactMarkdown>
+                  <span className="flex-1 min-w-0">
+                    {choice.text && (
+                      <span className="text-sm text-gray-800 block">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkMath]}
+                          rehypePlugins={[rehypeKatex]}
+                          components={{ p: ({ children }) => <>{children}</> }}
+                        >
+                          {choice.text}
+                        </ReactMarkdown>
+                      </span>
+                    )}
+                    {choice.choice_image_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={choice.choice_image_url}
+                        alt={`Choice ${choice.label}`}
+                        className={`max-w-full h-auto object-contain rounded-lg border border-gray-200${choice.text ? ' mt-2' : ''}`}
+                      />
+                    )}
                   </span>
                 </button>
               )

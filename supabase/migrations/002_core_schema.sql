@@ -72,11 +72,12 @@ create table public.questions (
 -- 5. choices
 --    Answer options for multiple_choice questions.
 create table public.choices (
-  id          uuid    primary key default gen_random_uuid(),
-  question_id uuid    not null references public.questions(id) on delete cascade,
-  label       text    not null,   -- "A", "B", "C", "D"
-  text        text    not null,
-  is_correct  boolean not null default false
+  id               uuid    primary key default gen_random_uuid(),
+  question_id      uuid    not null references public.questions(id) on delete cascade,
+  label            text    not null,   -- "A", "B", "C", "D"
+  text             text    not null,
+  is_correct       boolean not null default false,
+  choice_image_url text                -- optional image for diagram-based options
 );
 
 -- 6. explanation_blocks

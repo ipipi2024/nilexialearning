@@ -125,14 +125,27 @@ export async function createQuestion(formData: FormData) {
   // Insert choices for multiple_choice questions
   if (questionType === 'multiple_choice') {
     const correctLabel = formData.get('correct_choice') as string
+
+    // Upload any choice images first (sequential to avoid race conditions)
+    const choiceImageUrls: Partial<Record<string, string | null>> = {}
+    for (const label of ['A', 'B', 'C', 'D'] as const) {
+      const imageFile = formData.get(`choice_image_${label}`) as File | null
+      if (imageFile && imageFile.size > 0) {
+        choiceImageUrls[label] = await uploadToStorage(admin, 'choice-images', imageFile)
+      } else {
+        choiceImageUrls[label] = null
+      }
+    }
+
     const choices = (['A', 'B', 'C', 'D'] as const)
       .map((label) => ({
         question_id: question.id,
         label,
         text: (formData.get(`choice_${label}`) as string | null) ?? '',
         is_correct: label === correctLabel,
+        choice_image_url: choiceImageUrls[label] ?? null,
       }))
-      .filter((c) => c.text.trim() !== '')
+      .filter((c) => c.text.trim() !== '' || c.choice_image_url !== null)
 
     if (choices.length > 0) {
       const { error: choiceError } = await admin.from('choices').insert(choices)
@@ -219,6 +232,17 @@ export async function updateQuestion(questionId: string, formData: FormData) {
   if (error) throw new Error(error.message)
 
   if (questionType === 'multiple_choice') {
+    // Fetch existing choice images before deleting, so we can preserve them if no new file uploaded.
+    const { data: existingChoices } = await admin
+      .from('choices')
+      .select('label, choice_image_url')
+      .eq('question_id', questionId)
+
+    const existingImageMap: Record<string, string | null> = {}
+    for (const c of existingChoices ?? []) {
+      existingImageMap[c.label] = c.choice_image_url ?? null
+    }
+
     const { error: deleteError } = await admin
       .from('choices')
       .delete()
@@ -226,14 +250,27 @@ export async function updateQuestion(questionId: string, formData: FormData) {
     if (deleteError) throw new Error(deleteError.message)
 
     const correctLabel = formData.get('correct_choice') as string
+
+    // Resolve image URLs: upload new file if provided, otherwise keep existing.
+    const choiceImageUrls: Partial<Record<string, string | null>> = {}
+    for (const label of ['A', 'B', 'C', 'D'] as const) {
+      const imageFile = formData.get(`choice_image_${label}`) as File | null
+      if (imageFile && imageFile.size > 0) {
+        choiceImageUrls[label] = await uploadToStorage(admin, 'choice-images', imageFile)
+      } else {
+        choiceImageUrls[label] = existingImageMap[label] ?? null
+      }
+    }
+
     const choices = (['A', 'B', 'C', 'D'] as const)
       .map((label) => ({
         question_id: questionId,
         label,
         text: (formData.get(`choice_${label}`) as string | null) ?? '',
         is_correct: label === correctLabel,
+        choice_image_url: choiceImageUrls[label] ?? null,
       }))
-      .filter((c) => c.text.trim() !== '')
+      .filter((c) => c.text.trim() !== '' || c.choice_image_url !== null)
 
     if (choices.length > 0) {
       const { error: choiceError } = await admin.from('choices').insert(choices)
@@ -271,18 +308,23 @@ export async function deleteQuestion(formData: FormData) {
   const sectionId = formData.get('section_id') as string
 
   // Fetch image URLs before the cascade delete removes the rows.
-  const [{ data: question }, { data: imageBlocks }] = await Promise.all([
-    admin
-      .from('questions')
-      .select('question_image_url')
-      .eq('id', questionId)
-      .single(),
-    admin
-      .from('explanation_blocks')
-      .select('content')
-      .eq('question_id', questionId)
-      .eq('block_type', 'image'),
-  ])
+  const [{ data: question }, { data: imageBlocks }, { data: choicesWithImages }] =
+    await Promise.all([
+      admin
+        .from('questions')
+        .select('question_image_url')
+        .eq('id', questionId)
+        .single(),
+      admin
+        .from('explanation_blocks')
+        .select('content')
+        .eq('question_id', questionId)
+        .eq('block_type', 'image'),
+      admin
+        .from('choices')
+        .select('choice_image_url')
+        .eq('question_id', questionId),
+    ])
 
   // Build storage remove calls. Use allSettled so a missing/malformed file
   // never prevents the database row from being deleted.
@@ -302,6 +344,15 @@ export async function deleteQuestion(formData: FormData) {
     const path = getStoragePathFromPublicUrl(block.content, 'explanation-images')
     if (path) {
       storageOps.push(admin.storage.from('explanation-images').remove([path]))
+    }
+  }
+
+  for (const choice of choicesWithImages ?? []) {
+    if (choice.choice_image_url) {
+      const path = getStoragePathFromPublicUrl(choice.choice_image_url, 'choice-images')
+      if (path) {
+        storageOps.push(admin.storage.from('choice-images').remove([path]))
+      }
     }
   }
 

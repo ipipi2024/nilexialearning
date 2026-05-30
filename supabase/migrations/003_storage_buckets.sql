@@ -6,7 +6,8 @@
 insert into storage.buckets (id, name, public)
 values
   ('question-images',    'question-images',    true),
-  ('explanation-images', 'explanation-images', true);
+  ('explanation-images', 'explanation-images', true),
+  ('choice-images',      'choice-images',      true);
 
 -- Allow anyone to read public image URLs
 create policy "Public read — question images"
@@ -16,3 +17,7 @@ create policy "Public read — question images"
 create policy "Public read — explanation images"
   on storage.objects for select
   using (bucket_id = 'explanation-images');
+
+create policy "Public read — choice images"
+  on storage.objects for select
+  using (bucket_id = 'choice-images');

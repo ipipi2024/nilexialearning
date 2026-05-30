@@ -9,7 +9,7 @@ type DefaultValues = {
   question_type: QuestionType
   marks: number
   question_image_url: string | null
-  choices: Pick<Choice, 'label' | 'text' | 'is_correct'>[]
+  choices: Pick<Choice, 'label' | 'text' | 'is_correct' | 'choice_image_url'>[]
 }
 
 type Props = {
@@ -139,20 +139,42 @@ export function QuestionForm({
         <div className="border border-gray-200 rounded-xl p-4 space-y-3">
           <p className="text-sm font-medium text-gray-700">Answer Choices</p>
 
-          {(['A', 'B', 'C', 'D'] as const).map((label) => (
-            <div key={label} className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-gray-500 w-5">{label}</span>
-              <input
-                name={`choice_${label}`}
-                type="text"
-                placeholder={`Choice ${label}`}
-                defaultValue={
-                  defaultValues?.choices?.find((c) => c.label === label)?.text ?? ''
-                }
-                className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          ))}
+          {(['A', 'B', 'C', 'D'] as const).map((label) => {
+            const existing = defaultValues?.choices?.find((c) => c.label === label)
+            return (
+              <div key={label} className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-gray-500 w-5 shrink-0">{label}</span>
+                  <input
+                    name={`choice_${label}`}
+                    type="text"
+                    placeholder={`Choice ${label} text`}
+                    defaultValue={existing?.text ?? ''}
+                    className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="pl-7 space-y-1">
+                  {existing?.choice_image_url && (
+                    <div className="mb-1.5">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={existing.choice_image_url}
+                        alt={`Current Choice ${label} image`}
+                        className="max-w-xs rounded-lg border border-gray-200"
+                      />
+                      <p className="text-xs text-gray-400 mt-1">Upload a new image to replace</p>
+                    </div>
+                  )}
+                  <input
+                    name={`choice_image_${label}`}
+                    type="file"
+                    accept="image/*"
+                    className="w-full text-sm text-gray-500 file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border file:border-gray-300 file:text-xs file:font-medium file:bg-white file:text-gray-700 hover:file:bg-gray-50"
+                  />
+                </div>
+              </div>
+            )
+          })}
 
           <div>
             <label

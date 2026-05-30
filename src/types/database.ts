@@ -50,6 +50,7 @@ export type Choice = {
   label: string
   text: string
   is_correct: boolean
+  choice_image_url: string | null
 }
 
 export type BlockType = 'text' | 'image'
