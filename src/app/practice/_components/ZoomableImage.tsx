@@ -2,13 +2,26 @@
 
 import { useState, useEffect, useCallback } from 'react'
 
+type Variant = 'question' | 'choice' | 'explanation'
+
+// Constrain thumbnail display size per context. Images are never up-scaled
+// (w-auto keeps natural size when smaller than the max), and the zoom modal
+// always shows the original at full resolution.
+const thumbnailClass: Record<Variant, string> = {
+  question:    'block mx-auto w-auto h-auto max-w-[420px] max-h-[320px] object-contain',
+  choice:      'block mx-auto w-auto h-auto max-w-[220px] max-h-[160px] object-contain',
+  explanation: 'block mx-auto w-auto h-auto max-w-[480px] max-h-[360px] object-contain',
+}
+
 type Props = {
   src: string
   alt: string
+  variant: Variant
+  /** Extra positional classes only, e.g. mt-3 */
   className?: string
 }
 
-export function ZoomableImage({ src, alt, className }: Props) {
+export function ZoomableImage({ src, alt, variant, className }: Props) {
   const [open, setOpen] = useState(false)
 
   const close = useCallback(() => setOpen(false), [])
@@ -35,7 +48,7 @@ export function ZoomableImage({ src, alt, className }: Props) {
         src={src}
         alt={alt}
         onClick={() => setOpen(true)}
-        className={className}
+        className={`cursor-zoom-in ${thumbnailClass[variant]}${className ? ` ${className}` : ''}`}
       />
 
       {open && (
