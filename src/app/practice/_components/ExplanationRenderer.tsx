@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import type { ExplanationBlock } from '@/types/database'
+import { ZoomableImage } from './ZoomableImage'
 
 type Props = { blocks: ExplanationBlock[] }
 
@@ -19,11 +20,11 @@ export function ExplanationRenderer({ blocks }: Props) {
       {blocks.map((block) => {
         if (block.block_type === 'image') {
           return (
-            <img
+            <ZoomableImage
               key={block.id}
               src={block.content}
-              alt="Explanation"
-              className="max-w-full h-auto rounded-lg border border-gray-200"
+              alt="Explanation diagram"
+              className="max-w-full h-auto rounded-lg border border-gray-200 cursor-zoom-in"
             />
           )
         }

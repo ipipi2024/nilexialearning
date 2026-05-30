@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { ExplanationRenderer } from './ExplanationRenderer'
+import { ZoomableImage } from './ZoomableImage'
 import { saveAnswer, saveSelfCheck } from '@/app/practice/actions'
 import type { Choice, ExplanationBlock, Question, UserAnswer } from '@/types/database'
 
@@ -159,11 +160,10 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
           </div>
           {/* Question image — below text, matching admin view order */}
           {question.question_image_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <ZoomableImage
               src={question.question_image_url}
-              alt="Question"
-              className="mt-3 max-w-full h-auto rounded-lg border border-gray-200"
+              alt="Question diagram"
+              className="mt-3 max-w-full h-auto rounded-lg border border-gray-200 cursor-zoom-in"
             />
           )}
         </div>
@@ -207,12 +207,18 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
                       </span>
                     )}
                     {choice.choice_image_url && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={choice.choice_image_url}
-                        alt={`Choice ${choice.label}`}
-                        className={`max-w-full h-auto object-contain rounded-lg border border-gray-200${choice.text ? ' mt-2' : ''}`}
-                      />
+                      // Wrap in span to stop propagation so tapping the image
+                      // zooms it rather than selecting the answer
+                      <span
+                        className={`block${choice.text ? ' mt-2' : ''}`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <ZoomableImage
+                          src={choice.choice_image_url}
+                          alt={`Choice ${choice.label} diagram`}
+                          className="max-w-full h-auto object-contain rounded-lg border border-gray-200 cursor-zoom-in"
+                        />
+                      </span>
                     )}
                   </span>
                 </button>
