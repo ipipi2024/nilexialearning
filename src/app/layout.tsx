@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'CQORIA',
   description: 'Practice PNG national exam papers on your phone with explanations and progress tracking.',
+  themeColor: '#2563EB',
 };
 
 export default function RootLayout({
