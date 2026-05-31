@@ -9,6 +9,16 @@ import type { AiTutorMessage } from '@/types/database'
 
 type ChatMessage = Pick<AiTutorMessage, 'role' | 'content'>
 
+// Normalize legacy LaTeX delimiters that remark-math does not parse.
+// gpt-4o-mini sometimes outputs \(...\) or \[...\] despite instructions.
+function normalizeLatex(content: string): string {
+  return content
+    .replace(/\\\(/g, '$')
+    .replace(/\\\)/g, '$')
+    .replace(/\\\[/g, '$$')
+    .replace(/\\\]/g, '$$')
+}
+
 type Props = {
   questionId: string
   attemptId: string
@@ -200,7 +210,7 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
                       remarkPlugins={[remarkMath]}
                       rehypePlugins={[rehypeKatex]}
                     >
-                      {msg.content}
+                      {normalizeLatex(msg.content)}
                     </ReactMarkdown>
                   </div>
                 ) : (
