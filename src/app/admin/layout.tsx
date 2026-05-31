@@ -24,6 +24,9 @@ export default async function AdminLayout({
           <a href="/admin" className="text-sm text-gray-600 hover:text-gray-900">
             Exams
           </a>
+          <a href="/admin/payments" className="text-sm text-gray-600 hover:text-gray-900">
+            Payments
+          </a>
           <a
             href="/dashboard"
             className="text-sm text-gray-500 hover:text-gray-700 ml-auto"

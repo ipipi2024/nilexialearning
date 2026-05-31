@@ -56,7 +56,7 @@ export function ExplanationBlockForm({
             name="block_type"
             value={blockType}
             onChange={(e) => setBlockType(e.target.value as BlockType)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 bg-white rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="text">Text</option>
             <option value="image">Image</option>
@@ -76,7 +76,7 @@ export function ExplanationBlockForm({
             required
             defaultValue={defaultValues?.block_order ?? nextOrder}
             min="1"
-            className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 bg-white rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -98,7 +98,7 @@ export function ExplanationBlockForm({
               defaultValues?.block_type === 'text' ? defaultValues.content : undefined
             }
             placeholder="Enter explanation text..."
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       ) : (

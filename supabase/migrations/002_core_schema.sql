@@ -42,6 +42,10 @@ create table public.exams (
   total_marks      int         not null,
   status           text        not null default 'draft'
                                check (status in ('draft', 'published')),
+  access_type      text        not null default 'free'
+                               check (access_type in ('free', 'paid')),
+  price_amount     numeric,
+  price_currency   text        not null default 'PGK',
   created_at       timestamptz default now() not null
 );
 
@@ -117,6 +121,37 @@ create table public.user_answers (
   created_at        timestamptz       default now() not null
 );
 
+-- 9. payment_requests
+--    Students upload payment proof; admin reviews and approves/rejects.
+create table public.payment_requests (
+  id                uuid        primary key default gen_random_uuid(),
+  user_id           uuid        not null references auth.users(id)   on delete cascade,
+  exam_id           uuid        not null references public.exams(id) on delete cascade,
+  user_email        text        not null,
+  payer_name        text,
+  payment_reference text,
+  proof_image_url   text        not null,
+  note              text,
+  admin_note        text,
+  status            text        not null default 'pending'
+                                check (status in ('pending', 'approved', 'rejected')),
+  created_at        timestamptz default now() not null,
+  reviewed_at       timestamptz,
+  reviewed_by       uuid        references auth.users(id)
+);
+
+-- 10. user_exam_access
+--     Admin grants students access to paid exams after payment approval.
+create table public.user_exam_access (
+  id         uuid        primary key default gen_random_uuid(),
+  user_id    uuid        not null references auth.users(id)   on delete cascade,
+  exam_id    uuid        not null references public.exams(id) on delete cascade,
+  granted_at timestamptz default now() not null,
+  granted_by uuid        references auth.users(id),
+  source     text        not null default 'manual_payment',
+  unique(user_id, exam_id)
+);
+
 
 -- =============================================================
 -- INDEXES
@@ -132,6 +167,16 @@ create index on public.attempts           (user_id);
 create index on public.attempts           (exam_id);
 create index on public.user_answers       (attempt_id);
 create index on public.user_answers       (question_id);
+
+create index on public.payment_requests   (user_id);
+create index on public.payment_requests   (exam_id);
+create index on public.payment_requests   (status);
+create unique index payment_requests_pending_unique
+  on public.payment_requests (user_id, exam_id)
+  where (status = 'pending');
+
+create index on public.user_exam_access   (user_id);
+create index on public.user_exam_access   (exam_id);
 
 
 -- =============================================================
@@ -167,6 +212,8 @@ alter table public.choices           enable row level security;
 alter table public.explanation_blocks enable row level security;
 alter table public.attempts          enable row level security;
 alter table public.user_answers      enable row level security;
+alter table public.payment_requests  enable row level security;
+alter table public.user_exam_access  enable row level security;
 
 
 -- profiles: users manage only their own row
@@ -243,6 +290,22 @@ create policy "attempts: insert own"
 
 create policy "attempts: update own"
   on public.attempts for update
+  using (auth.uid() = user_id);
+
+
+-- payment_requests: users insert and read their own rows only
+create policy "payment_requests: select own"
+  on public.payment_requests for select
+  using (auth.uid() = user_id);
+
+create policy "payment_requests: insert own"
+  on public.payment_requests for insert
+  with check (auth.uid() = user_id);
+
+
+-- user_exam_access: users read their own rows only (admin writes via service role)
+create policy "user_exam_access: select own"
+  on public.user_exam_access for select
   using (auth.uid() = user_id);
 
 

@@ -237,7 +237,7 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
               defaultValue={currentAnswer}
               onBlur={(e) => handleTextBlur(e.target.value)}
               placeholder="Write your answer here…"
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             />
           </div>
         )}

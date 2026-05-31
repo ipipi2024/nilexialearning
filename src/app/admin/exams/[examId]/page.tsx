@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createSection, updateExamStatus } from '@/app/admin/actions'
+import { createSection, updateExamStatus, updateExamAccess } from '@/app/admin/actions'
 import type { Section } from '@/types/database'
 
 export const dynamic = 'force-dynamic'
@@ -70,6 +70,71 @@ export default async function ExamPage({ params }: Props) {
         </div>
       </div>
 
+      {/* Access Settings */}
+      <div>
+        <h2 className="text-base font-semibold text-gray-900 mb-3">Access Settings</h2>
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <form action={updateExamAccess.bind(null, examId)} className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="access_type">
+                  Access Type
+                </label>
+                <select
+                  id="access_type"
+                  name="access_type"
+                  defaultValue={exam.access_type ?? 'free'}
+                  className="w-full border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="free">Free</option>
+                  <option value="paid">Paid</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="price_currency">
+                  Currency
+                </label>
+                <input
+                  id="price_currency"
+                  name="price_currency"
+                  type="text"
+                  defaultValue={exam.price_currency ?? 'PGK'}
+                  className="w-full border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="price_amount">
+                Price <span className="font-normal text-gray-400">(for paid exams only)</span>
+              </label>
+              <input
+                id="price_amount"
+                name="price_amount"
+                type="number"
+                step="0.01"
+                min="0"
+                defaultValue={exam.price_amount ?? ''}
+                placeholder="0.00"
+                className="w-full border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-500">
+                {exam.access_type === 'paid' && exam.price_amount
+                  ? `Paid — ${exam.price_currency} ${Number(exam.price_amount).toFixed(2)}`
+                  : 'Free'}
+              </p>
+              <button
+                type="submit"
+                className="text-sm font-semibold bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Save Access Settings
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
       {/* Sections list */}
       <div>
         <h2 className="text-base font-semibold text-gray-900 mb-3">Sections</h2>
@@ -125,7 +190,7 @@ export default async function ExamPage({ params }: Props) {
                     type="text"
                     required
                     placeholder="Part A"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 bg-white rounded-lg px-3 py-1.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -141,7 +206,7 @@ export default async function ExamPage({ params }: Props) {
                     type="text"
                     required
                     placeholder="multiple_choice"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 bg-white rounded-lg px-3 py-1.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -160,7 +225,7 @@ export default async function ExamPage({ params }: Props) {
                     type="number"
                     required
                     min="1"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 bg-white rounded-lg px-3 py-1.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -176,7 +241,7 @@ export default async function ExamPage({ params }: Props) {
                     type="number"
                     required
                     min="1"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 bg-white rounded-lg px-3 py-1.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -192,7 +257,7 @@ export default async function ExamPage({ params }: Props) {
                     type="number"
                     required
                     min="1"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 bg-white rounded-lg px-3 py-1.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>

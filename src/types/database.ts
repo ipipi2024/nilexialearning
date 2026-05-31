@@ -18,7 +18,35 @@ export type Exam = {
   duration_minutes: number
   total_marks: number
   status: 'draft' | 'published'
+  access_type: 'free' | 'paid'
+  price_amount: number | null
+  price_currency: string
   created_at: string
+}
+
+export type PaymentRequest = {
+  id: string
+  user_id: string
+  exam_id: string
+  user_email: string
+  payer_name: string | null
+  payment_reference: string | null
+  proof_image_url: string
+  note: string | null
+  admin_note: string | null
+  status: 'pending' | 'approved' | 'rejected'
+  created_at: string
+  reviewed_at: string | null
+  reviewed_by: string | null
+}
+
+export type UserExamAccess = {
+  id: string
+  user_id: string
+  exam_id: string
+  granted_at: string
+  granted_by: string | null
+  source: string
 }
 
 export type Section = {

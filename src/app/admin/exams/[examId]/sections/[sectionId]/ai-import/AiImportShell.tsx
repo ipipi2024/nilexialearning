@@ -34,7 +34,7 @@ function Md({ text }: { text: string }) {
 }
 
 const inputCls =
-  'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500'
+  'w-full border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm font-mono text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500'
 
 function DraftCard({
   draft,
@@ -103,7 +103,7 @@ function DraftCard({
             min="1"
             value={draft.number}
             onChange={(e) => set('number', parseInt(e.target.value) || draft.number)}
-            className="w-24 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-24 border border-gray-300 bg-white rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -136,7 +136,7 @@ function DraftCard({
                 type="text"
                 value={c.text}
                 onChange={(e) => setChoiceText(c.label, e.target.value)}
-                className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 border border-gray-300 bg-white rounded-lg px-3 py-1.5 text-sm font-mono text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           ))}

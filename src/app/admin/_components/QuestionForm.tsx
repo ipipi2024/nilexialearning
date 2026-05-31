@@ -24,7 +24,7 @@ type Props = {
 }
 
 const inputClass =
-  'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+  'w-full border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500'
 
 function defaultTypeForNumber(n: number | undefined): QuestionType {
   return n !== undefined && n >= 31 ? 'short_answer' : 'multiple_choice'
@@ -171,7 +171,7 @@ export function QuestionForm({
                     type="text"
                     placeholder={`Choice ${label} text`}
                     defaultValue={existing?.text ?? ''}
-                    className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 border border-gray-300 bg-white rounded-lg px-3 py-1.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div className="pl-7">
@@ -197,7 +197,7 @@ export function QuestionForm({
               name="correct_choice"
               value={correctChoice}
               onChange={(e) => setCorrectChoice(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-300 bg-white rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {(['A', 'B', 'C', 'D'] as const).map((l) => (
                 <option key={l} value={l}>{l}</option>

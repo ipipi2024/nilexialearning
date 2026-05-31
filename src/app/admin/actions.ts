@@ -462,6 +462,89 @@ export async function saveImportedQuestions(formData: FormData) {
 }
 
 // ------------------------------------------------------------------
+// Exam Access Settings
+// ------------------------------------------------------------------
+
+export async function updateExamAccess(examId: string, formData: FormData) {
+  const admin = await requireAdmin()
+
+  const accessType = formData.get('access_type') as 'free' | 'paid'
+  const rawPrice = formData.get('price_amount') as string | null
+  const priceAmount = rawPrice && rawPrice.trim() !== '' ? parseFloat(rawPrice) : null
+  const priceCurrency = (formData.get('price_currency') as string)?.trim() || 'PGK'
+
+  const { error } = await admin
+    .from('exams')
+    .update({
+      access_type: accessType,
+      price_amount: accessType === 'paid' ? priceAmount : null,
+      price_currency: priceCurrency,
+    })
+    .eq('id', examId)
+
+  if (error) throw new Error(error.message)
+
+  redirect(`/admin/exams/${examId}`)
+}
+
+// ------------------------------------------------------------------
+// Payment Request Review
+// ------------------------------------------------------------------
+
+export async function approvePaymentRequest(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user || !isAdmin(user.email)) redirect('/dashboard')
+  const admin = createAdminClient()
+
+  const requestId = formData.get('request_id') as string
+  const userId = formData.get('user_id') as string
+  const examId = formData.get('exam_id') as string
+
+  // Grant access — upsert is a no-op if access already exists
+  const { error: accessError } = await admin.from('user_exam_access').upsert(
+    { user_id: userId, exam_id: examId, granted_by: user.id, source: 'manual_payment' },
+    { onConflict: 'user_id,exam_id' }
+  )
+  if (accessError) throw new Error(accessError.message)
+
+  const { error } = await admin
+    .from('payment_requests')
+    .update({ status: 'approved', reviewed_at: new Date().toISOString(), reviewed_by: user.id })
+    .eq('id', requestId)
+  if (error) throw new Error(error.message)
+
+  redirect('/admin/payments')
+}
+
+export async function rejectPaymentRequest(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user || !isAdmin(user.email)) redirect('/dashboard')
+  const admin = createAdminClient()
+
+  const requestId = formData.get('request_id') as string
+  const adminNote = (formData.get('admin_note') as string)?.trim() || null
+
+  const { error } = await admin
+    .from('payment_requests')
+    .update({
+      status: 'rejected',
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: user.id,
+      admin_note: adminNote,
+    })
+    .eq('id', requestId)
+  if (error) throw new Error(error.message)
+
+  redirect('/admin/payments')
+}
+
+// ------------------------------------------------------------------
 // Update Explanation Block
 // ------------------------------------------------------------------
 
