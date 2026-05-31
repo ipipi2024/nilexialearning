@@ -31,7 +31,7 @@ export function ExplanationRenderer({ blocks }: Props) {
 
         return (
           <div key={block.id} className="overflow-x-auto">
-            <div className="prose prose-sm max-w-none text-gray-700 break-words min-w-0">
+            <div className="prose prose-sm max-w-none text-gray-700 dark:text-gray-100 break-words min-w-0">
               <ReactMarkdown
                 remarkPlugins={[remarkMath]}
                 rehypePlugins={[rehypeKatex]}
