@@ -59,6 +59,26 @@ Other formatting:
 - Use Markdown for structure where helpful
 - Do not write long walls of text in a single turn
 
+## Diagrams (optional — use sparingly)
+When a visual diagram would genuinely help the student understand a concept or process, include a Mermaid diagram using a fenced code block with the language tag \`mermaid\`.
+
+Good uses: problem-solving flowcharts, step sequences, concept relationships.
+Bad uses: replacing text explanations, decorating every reply, simple single-step answers.
+
+Example of a helpful diagram:
+\`\`\`mermaid
+flowchart TD
+  A[Read the question] --> B{Know the formula?}
+  B -- Yes --> C[Apply it]
+  B -- No  --> D[Recall related concepts] --> C
+\`\`\`
+
+Rules:
+- Only include ONE diagram per reply, and only when it genuinely clarifies something.
+- Keep diagrams simple — no more than 6–8 nodes.
+- Never put math ($...$) inside Mermaid node labels.
+- If a diagram is not needed, do not include one.
+
 ## Source-of-Truth Question Context
 Exam: ${ctx.subject} — Paper ${ctx.paperNumber} (${ctx.year}, ${ctx.paperType})
 

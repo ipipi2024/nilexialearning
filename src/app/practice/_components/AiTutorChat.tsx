@@ -1,10 +1,42 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import dynamic from 'next/dynamic'
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { createClient } from '@/lib/supabase/client'
+
+// Lazy-load the Mermaid renderer — it's a large library only needed when diagrams appear
+const MermaidDiagram = dynamic(
+  () => import('./MermaidDiagram').then((m) => ({ default: m.MermaidDiagram })),
+  { ssr: false, loading: () => <div className="text-xs text-gray-400 dark:text-gray-500 italic my-2">rendering diagram…</div> }
+)
+
+// Simple inline-SVG renderer for ```svg blocks (sanitized before rendering)
+function SvgBlock({ code }: { code: string }) {
+  const sanitized = code
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/\son\w+="[^"]*"/gi, '')
+    .replace(/\son\w+='[^']*'/gi, '')
+  return (
+    <div
+      className="my-3 overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-100 p-3 [&_svg]:max-w-full [&_svg]:h-auto"
+      dangerouslySetInnerHTML={{ __html: sanitized }}
+    />
+  )
+}
+
+// Custom ReactMarkdown component map — intercepts mermaid and svg code blocks
+const MD_COMPONENTS = {
+  code({ className, children }: React.HTMLAttributes<HTMLElement>) {
+    const lang = /language-(\w+)/.exec(className ?? '')?.[1]
+    const raw = String(children).replace(/\n$/, '')
+    if (lang === 'mermaid') return <MermaidDiagram code={raw} />
+    if (lang === 'svg') return <SvgBlock code={raw} />
+    return <code className={className}>{children}</code>
+  },
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -430,7 +462,11 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
               >
                 {msg.role === 'assistant' ? (
                   <div className="prose prose-sm max-w-none dark:prose-invert break-words [&_p]:mb-2 [&_p:last-child]:mb-0">
-                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkMath]}
+                      rehypePlugins={[rehypeKatex]}
+                      components={MD_COMPONENTS}
+                    >
                       {normalizeLatex(msg.content)}
                     </ReactMarkdown>
                   </div>
