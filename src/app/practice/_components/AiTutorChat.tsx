@@ -345,23 +345,26 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
         aria-label="AI Tutor chat"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="text-purple-600 dark:text-purple-400">✦</span>
-            <span className="font-semibold text-gray-800 dark:text-gray-100 text-sm">AI Tutor</span>
-            <span className="text-xs text-gray-400 dark:text-gray-500 font-normal">— step by step</span>
+        <div className="border-b border-gray-200 dark:border-gray-700 shrink-0">
+          <div className="max-w-3xl mx-auto w-full flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-2">
+              <span className="text-purple-600 dark:text-purple-400">✦</span>
+              <span className="font-semibold text-gray-800 dark:text-gray-100 text-sm">AI Tutor</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500 font-normal">— step by step</span>
+            </div>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 text-lg leading-none p-1 -mr-1"
+              aria-label="Close AI Tutor"
+            >
+              ✕
+            </button>
           </div>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 text-lg leading-none p-1 -mr-1"
-            aria-label="Close AI Tutor"
-          >
-            ✕
-          </button>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0">
+        <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="max-w-3xl mx-auto w-full px-4 py-4 space-y-4">
           {messages.length === 0 && historyLoaded && (
             <div className="text-center">
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
@@ -441,10 +444,12 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
           )}
 
           <div ref={messagesEndRef} />
-        </div>
+        </div>{/* end max-w-3xl */}
+        </div>{/* end overflow-y-auto */}
 
         {/* Input area */}
-        <div className="shrink-0 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="shrink-0 border-t border-gray-200 dark:border-gray-700">
+          <div className="max-w-3xl mx-auto w-full px-4 py-3">
           {/* Attachment preview */}
           {pendingPreviewUrl && (
             <div className="mb-2 flex items-start gap-2">
@@ -567,7 +572,8 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
           {/* Error notices */}
           {voiceError && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{voiceError}</p>}
           {attachmentError && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{attachmentError}</p>}
-        </div>
+          </div>{/* end max-w-3xl */}
+        </div>{/* end input area */}
       </div>
 
       {/* Image zoom overlay — rendered OUTSIDE the drawer so it is not trapped
