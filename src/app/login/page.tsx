@@ -70,7 +70,13 @@ export default async function LoginPage({ searchParams }: Props) {
             </SubmitButton>
           </form>
 
-          <p className="mt-5 text-sm text-center text-gray-500 dark:text-gray-400">
+          <p className="mt-4 text-sm text-center">
+            <a href="/forgot-password" className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:underline">
+              Forgot password?
+            </a>
+          </p>
+
+          <p className="mt-3 text-sm text-center text-gray-500 dark:text-gray-400">
             Don&apos;t have an account?{' '}
             <a href="/signup" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
               Sign up

@@ -69,3 +69,36 @@ export async function logout() {
   revalidatePath('/', 'layout')
   redirect('/login')
 }
+
+export async function requestPasswordReset(formData: FormData) {
+  const supabase = await createClient()
+  const email = (formData.get('email') as string).trim()
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.APP_URL ?? ''
+
+  await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${appUrl}/auth/callback?next=/reset-password`,
+  })
+
+  // Always redirect to the sent state — never reveal whether the email exists.
+  redirect('/forgot-password?sent=1')
+}
+
+export async function updatePassword(
+  _prevState: { error?: string; success?: boolean },
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  const password = (formData.get('password') as string) ?? ''
+  const confirmPassword = (formData.get('confirm_password') as string) ?? ''
+
+  if (!password) return { error: 'Password is required.' }
+  if (password.length < 8) return { error: 'Password must be at least 8 characters.' }
+  if (password !== confirmPassword) return { error: 'Passwords do not match.' }
+
+  const supabase = await createClient()
+  const { error } = await supabase.auth.updateUser({ password })
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/', 'layout')
+  return { success: true }
+}
