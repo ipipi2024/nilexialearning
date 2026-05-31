@@ -103,6 +103,7 @@ export async function sendStudentPaymentReceived({
   exam: { subject: string; year: number; paper_number: number }
 }) {
   const examTitle = fmt(exam)
+  const appUrl = APP_URL ? `${APP_URL}/practice` : null
 
   const html = `
 <div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#111;padding:24px;">
@@ -110,12 +111,16 @@ export async function sendStudentPaymentReceived({
   <p style="font-size:14px;color:#555;margin:0 0 16px;">Thank you for submitting your payment proof.</p>
   <p style="font-size:14px;margin:0 0 6px;"><strong>Exam:</strong> ${examTitle}</p>
   <p style="font-size:14px;margin:0 0 16px;"><strong>Status:</strong> Pending review</p>
-  <p style="font-size:14px;color:#555;">
-    You will receive another email once your payment has been approved or rejected.
+  <p style="font-size:14px;color:#555;margin:0 0 8px;">
+    Please watch your email — you will receive a notification once your payment is approved or rejected.
   </p>
+  <p style="font-size:14px;color:#555;margin:0 0 20px;">
+    Once approved, your access to the exam paper will be unlocked automatically.
+  </p>
+  ${appUrl ? `<a href="${appUrl}" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;">Open CQORIA →</a>` : ''}
 </div>`
 
-  const text = `Payment Proof Received\n\nExam: ${examTitle}\nStatus: Pending review\n\nYou will be notified by email once your payment is reviewed.`
+  const text = `Payment Proof Received\n\nExam: ${examTitle}\nStatus: Pending review\n\nPlease watch your email — you will be notified once your payment is approved or rejected.\nOnce approved, your access will be unlocked automatically.${appUrl ? `\n\n${appUrl}` : ''}`
 
   await sendEmail({ to: studentEmail, subject: 'Payment proof received — CQORIA', html, text })
 }
@@ -137,11 +142,11 @@ export async function sendStudentPaymentApproved({
   <h2 style="font-size:18px;margin:0 0 12px;color:#16a34a;">Access Approved</h2>
   <p style="font-size:14px;margin:0 0 8px;">Your payment has been approved. You now have access to:</p>
   <p style="font-size:14px;font-weight:bold;margin:0 0 16px;">${examTitle}</p>
-  <p style="font-size:14px;color:#555;margin:0 0 12px;">Log in to CQORIA to start practising.</p>
-  ${practiceUrl ? `<p style="font-size:14px;"><a href="${practiceUrl}">Go to practice papers →</a></p>` : ''}
+  <p style="font-size:14px;color:#555;margin:0 0 20px;">Log in to CQORIA and start practising straight away.</p>
+  ${practiceUrl ? `<a href="${practiceUrl}" style="display:inline-block;background:#16a34a;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;">Start Practicing →</a>` : ''}
 </div>`
 
-  const text = `Access Approved\n\nYour payment for ${examTitle} has been approved.\n\nLog in to CQORIA to start practising.${practiceUrl ? `\n${practiceUrl}` : ''}`
+  const text = `Access Approved\n\nYour payment for ${examTitle} has been approved.\n\nLog in to CQORIA and start practising straight away.${practiceUrl ? `\n\n${practiceUrl}` : ''}`
 
   await sendEmail({ to: studentEmail, subject: 'Access approved — CQORIA', html, text })
 }
@@ -196,13 +201,17 @@ export async function sendStudentAiPaymentReceived({
   studentEmail: string
   planName: string
 }) {
+  const appUrl = APP_URL ? `${APP_URL}/practice` : null
   const html = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#111;padding:24px;">
   <h2 style="font-size:18px;margin:0 0 12px;">AI Plan Payment Received</h2>
   <p style="font-size:14px;color:#555;margin:0 0 16px;">Thank you for submitting your payment proof.</p>
   <p style="font-size:14px;margin:0 0 6px;"><strong>Plan:</strong> ${planName}</p>
-  <p style="font-size:14px;color:#555;">You will receive another email once your payment is reviewed.</p>
+  <p style="font-size:14px;margin:0 0 16px;"><strong>Status:</strong> Pending review</p>
+  <p style="font-size:14px;color:#555;margin:0 0 8px;">Please watch your email — you will receive a notification once your payment is approved or rejected.</p>
+  <p style="font-size:14px;color:#555;margin:0 0 20px;">Once approved, your AI Tutor credits will be activated automatically.</p>
+  ${appUrl ? `<a href="${appUrl}" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;">Open CQORIA →</a>` : ''}
 </div>`
-  const text = `AI Plan Payment Received\n\nPlan: ${planName}\nStatus: Pending review\n\nYou will be notified once reviewed.`
+  const text = `AI Plan Payment Received\n\nPlan: ${planName}\nStatus: Pending review\n\nPlease watch your email — you will be notified once your payment is approved or rejected.\nOnce approved, your AI Tutor credits will be activated automatically.${appUrl ? `\n\n${appUrl}` : ''}`
   await sendEmail({ to: studentEmail, subject: 'AI plan payment received — CQORIA', html, text })
 }
 
@@ -217,16 +226,16 @@ export async function sendStudentAiPlanApproved({
   messagesTotal: number
   expiresAt: string
 }) {
-  const upgradeUrl = APP_URL ? `${APP_URL}/ai/upgrade` : null
+  const practiceUrl = APP_URL ? `${APP_URL}/practice` : null
   const expiry = new Date(expiresAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
   const html = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#111;padding:24px;">
   <h2 style="font-size:18px;margin:0 0 12px;color:#16a34a;">AI Tutor Plan Activated</h2>
   <p style="font-size:14px;margin:0 0 8px;">Your payment has been approved. Your AI Tutor plan is now active:</p>
   <p style="font-size:14px;font-weight:bold;margin:0 0 6px;">${planName} — ${messagesTotal} AI messages</p>
-  <p style="font-size:14px;color:#555;margin:0 0 16px;">Valid until ${expiry}.</p>
-  ${upgradeUrl ? `<p style="font-size:14px;"><a href="${upgradeUrl}">View your plan →</a></p>` : ''}
+  <p style="font-size:14px;color:#555;margin:0 0 20px;">Valid until ${expiry}.</p>
+  ${practiceUrl ? `<a href="${practiceUrl}" style="display:inline-block;background:#16a34a;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;">Start Practicing →</a>` : ''}
 </div>`
-  const text = `AI Tutor Plan Activated\n\n${planName} — ${messagesTotal} messages\nValid until ${expiry}`
+  const text = `AI Tutor Plan Activated\n\n${planName} — ${messagesTotal} messages\nValid until ${expiry}${practiceUrl ? `\n\n${practiceUrl}` : ''}`
   await sendEmail({ to: studentEmail, subject: 'AI Tutor plan activated — CQORIA', html, text })
 }
 
@@ -239,13 +248,15 @@ export async function sendStudentAiPlanRejected({
   planName: string
   adminNote: string | null
 }) {
+  const upgradeUrl = APP_URL ? `${APP_URL}/ai/upgrade` : null
   const html = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#111;padding:24px;">
   <h2 style="font-size:18px;margin:0 0 12px;color:#dc2626;">AI Plan Payment Rejected</h2>
   <p style="font-size:14px;margin:0 0 8px;">Unfortunately your payment for <strong>${planName}</strong> could not be approved.</p>
   ${adminNote ? `<p style="font-size:14px;margin:0 0 16px;"><strong>Reason:</strong> ${adminNote}</p>` : ''}
-  <p style="font-size:14px;color:#555;">Please resubmit your payment proof or contact support.</p>
+  <p style="font-size:14px;color:#555;margin:0 0 20px;">Please resubmit your payment proof or contact support if you believe this is an error.</p>
+  ${upgradeUrl ? `<a href="${upgradeUrl}" style="display:inline-block;background:#374151;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;">Return to CQORIA →</a>` : ''}
 </div>`
-  const text = `AI Plan Payment Rejected\n\nPlan: ${planName}${adminNote ? `\nReason: ${adminNote}` : ''}\n\nPlease resubmit or contact support.`
+  const text = `AI Plan Payment Rejected\n\nPlan: ${planName}${adminNote ? `\nReason: ${adminNote}` : ''}\n\nPlease resubmit your payment proof or contact support.${upgradeUrl ? `\n\n${upgradeUrl}` : ''}`
   await sendEmail({ to: studentEmail, subject: 'AI plan payment rejected — CQORIA', html, text })
 }
 
@@ -261,6 +272,7 @@ export async function sendStudentPaymentRejected({
   adminNote: string | null
 }) {
   const examTitle = fmt(exam)
+  const practiceUrl = APP_URL ? `${APP_URL}/practice` : null
 
   const html = `
 <div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#111;padding:24px;">
@@ -268,13 +280,14 @@ export async function sendStudentPaymentRejected({
   <p style="font-size:14px;margin:0 0 8px;">Unfortunately, your payment proof could not be approved for:</p>
   <p style="font-size:14px;font-weight:bold;margin:0 0 16px;">${examTitle}</p>
   ${adminNote ? `<p style="font-size:14px;margin:0 0 16px;"><strong>Reason:</strong> ${adminNote}</p>` : ''}
-  <p style="font-size:14px;color:#555;">
+  <p style="font-size:14px;color:#555;margin:0 0 20px;">
     Please double-check your payment details and submit a new proof,
     or contact support if you believe this is an error.
   </p>
+  ${practiceUrl ? `<a href="${practiceUrl}" style="display:inline-block;background:#374151;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;">Return to CQORIA →</a>` : ''}
 </div>`
 
-  const text = `Payment Request Rejected\n\nYour payment proof for ${examTitle} could not be approved.${adminNote ? `\n\nReason: ${adminNote}` : ''}\n\nPlease resubmit your payment proof or contact support.`
+  const text = `Payment Request Rejected\n\nYour payment proof for ${examTitle} could not be approved.${adminNote ? `\n\nReason: ${adminNote}` : ''}\n\nPlease resubmit your payment proof or contact support.${practiceUrl ? `\n\n${practiceUrl}` : ''}`
 
   await sendEmail({ to: studentEmail, subject: 'Payment request rejected — CQORIA', html, text })
 }

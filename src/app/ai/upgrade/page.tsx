@@ -101,12 +101,18 @@ export default async function AiUpgradePage({ searchParams }: Props) {
 
         {/* Success banner */}
         {submitted === '1' && (
-          <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl px-5 py-4 space-y-1">
+          <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl px-5 py-5 space-y-2">
             <p className="text-sm font-semibold text-green-800 dark:text-green-400">
-              Payment proof submitted.
+              Payment proof submitted successfully.
             </p>
             <p className="text-sm text-green-700 dark:text-green-500">
-              Your request is under review. You will be notified by email once approved.
+              Your request is pending review.
+            </p>
+            <p className="text-sm text-green-700 dark:text-green-500">
+              Please check your email — you will receive a notification once your payment is approved or rejected.
+            </p>
+            <p className="text-sm text-green-700 dark:text-green-500">
+              Once approved, your AI Tutor credits will be activated automatically.
             </p>
           </div>
         )}

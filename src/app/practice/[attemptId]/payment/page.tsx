@@ -81,7 +81,13 @@ export default async function PaymentPage({ params, searchParams }: Props) {
                 Payment proof submitted successfully.
               </p>
               <p className="text-sm text-green-700 dark:text-green-500">
-                Your request is awaiting review.
+                Your request is pending review.
+              </p>
+              <p className="text-sm text-green-700 dark:text-green-500">
+                Please check your email — you will receive a notification once your payment is approved or rejected.
+              </p>
+              <p className="text-sm text-green-700 dark:text-green-500">
+                Once approved, your access to this exam paper will be unlocked automatically.
               </p>
             </div>
             <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4 space-y-1">
