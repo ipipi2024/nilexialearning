@@ -19,6 +19,28 @@ function normalizeLatex(content: string): string {
     .replace(/\\\]/g, '$$')
 }
 
+// Minimal types for the browser Speech Recognition API.
+// These are not in all TypeScript DOM lib versions.
+type SRInstance = {
+  continuous: boolean
+  interimResults: boolean
+  lang: string
+  start(): void
+  stop(): void
+  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null
+  onerror: ((e: { error: string }) => void) | null
+  onend: (() => void) | null
+}
+
+// Returns the SpeechRecognition constructor (handles webkit prefix), or null.
+function getSpeechRecognitionAPI(): (new () => SRInstance) | null {
+  if (typeof window === 'undefined') return null
+  const w = window as unknown as Record<string, unknown>
+  if (typeof w['SpeechRecognition'] === 'function') return w['SpeechRecognition'] as new () => SRInstance
+  if (typeof w['webkitSpeechRecognition'] === 'function') return w['webkitSpeechRecognition'] as new () => SRInstance
+  return null
+}
+
 type Props = {
   questionId: string
   attemptId: string
@@ -38,6 +60,12 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
   const [isLoading, setIsLoading] = useState(false)
   const [historyLoaded, setHistoryLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Voice input state
+  const [isListening, setIsListening] = useState(false)
+  const [voiceError, setVoiceError] = useState<string | null>(null)
+  const recognitionRef = useRef<SRInstance | null>(null)
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -79,12 +107,81 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
     }
   }, [isOpen])
 
+  // Stop recognition when drawer closes
+  useEffect(() => {
+    if (!isOpen && recognitionRef.current) {
+      recognitionRef.current.stop()
+    }
+  }, [isOpen])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.stop()
+    }
+  }, [])
+
+  function toggleVoice() {
+    setVoiceError(null)
+
+    if (isListening) {
+      recognitionRef.current?.stop()
+      return
+    }
+
+    const SpeechRecognitionAPI = getSpeechRecognitionAPI()
+    if (!SpeechRecognitionAPI) {
+      setVoiceError(
+        'Voice input is not supported on this browser. Please type your message.'
+      )
+      return
+    }
+
+    const recognition = new SpeechRecognitionAPI()
+    recognition.continuous = false
+    recognition.interimResults = false
+    recognition.lang = 'en-US'
+
+    recognition.onresult = (event) => {
+      const results = event.results
+      const transcript = results[results.length - 1][0].transcript
+      setInput((prev) => {
+        const separator = prev.trim().length > 0 ? ' ' : ''
+        return prev + separator + transcript
+      })
+    }
+
+    recognition.onerror = (event) => {
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        setVoiceError(
+          'Microphone permission denied. Please allow microphone access in your browser settings.'
+        )
+      } else if (event.error === 'no-speech') {
+        setVoiceError('No speech detected. Please try again.')
+      } else if (event.error === 'network') {
+        setVoiceError('Could not connect to speech recognition service. Please check your connection.')
+      } else if (event.error !== 'aborted') {
+        setVoiceError('Voice input error. Please type your message.')
+      }
+    }
+
+    recognition.onend = () => {
+      setIsListening(false)
+      recognitionRef.current = null
+    }
+
+    recognitionRef.current = recognition
+    recognition.start()
+    setIsListening(true)
+  }
+
   async function sendMessage(text: string) {
     const trimmed = text.trim()
     if (!trimmed || isLoading) return
 
     setInput('')
     setError(null)
+    setVoiceError(null)
     setMessages((prev) => [...prev, { role: 'user', content: trimmed }])
     setIsLoading(true)
 
@@ -245,13 +342,53 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
             <textarea
               ref={inputRef}
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                setInput(e.target.value)
+                setVoiceError(null)
+              }}
               onKeyDown={handleKeyDown}
-              placeholder="Ask a question… (Enter to send)"
+              placeholder={isListening ? 'Listening…' : 'Ask a question… (Enter to send)'}
               rows={2}
               disabled={isLoading}
               className="flex-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none disabled:opacity-60"
             />
+
+            {/* Mic button */}
+            <button
+              onClick={toggleVoice}
+              disabled={isLoading}
+              aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
+              className={`shrink-0 flex flex-col items-center justify-center gap-0.5 rounded-xl text-xs font-semibold transition-colors h-[4.5rem] w-12 ${
+                isListening
+                  ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
+                  : 'border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-purple-400 dark:hover:border-purple-600 hover:text-purple-600 dark:hover:text-purple-400 bg-white dark:bg-gray-800'
+              } disabled:opacity-50`}
+            >
+              {isListening ? (
+                <>
+                  {/* Stop square icon */}
+                  <span className="block w-3.5 h-3.5 rounded-sm bg-white" />
+                  <span>Stop</span>
+                </>
+              ) : (
+                <>
+                  {/* Microphone icon */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="w-5 h-5"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                    <path d="M19 11a1 1 0 0 0-2 0 5 5 0 0 1-10 0 1 1 0 0 0-2 0 7 7 0 0 0 6 6.92V20H9a1 1 0 0 0 0 2h6a1 1 0 0 0 0-2h-2v-2.08A7 7 0 0 0 19 11z" />
+                  </svg>
+                  <span>Mic</span>
+                </>
+              )}
+            </button>
+
+            {/* Send button */}
             <button
               onClick={() => sendMessage(input)}
               disabled={isLoading || input.trim().length === 0}
@@ -260,6 +397,11 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
               Send
             </button>
           </div>
+
+          {/* Voice error / unsupported notice */}
+          {voiceError && (
+            <p className="mt-2 text-xs text-red-600 dark:text-red-400">{voiceError}</p>
+          )}
         </div>
       </div>
     </>
