@@ -15,6 +15,18 @@ async function requireUser() {
 export async function startAttempt(examId: string) {
   const { supabase, user } = await requireUser()
 
+  // Guard: exam must be published. RLS already filters draft exams for the
+  // student client, so a draft exam returns null here.
+  const { data: exam } = await supabase
+    .from('exams')
+    .select('status')
+    .eq('id', examId)
+    .maybeSingle()
+
+  if (!exam || exam.status !== 'published') {
+    redirect('/practice')
+  }
+
   const { data: attempt, error } = await supabase
     .from('attempts')
     .insert({ exam_id: examId, user_id: user.id, mode: 'practice' })

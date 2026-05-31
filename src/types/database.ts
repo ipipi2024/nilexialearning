@@ -17,6 +17,7 @@ export type Exam = {
   paper_type: string
   duration_minutes: number
   total_marks: number
+  status: 'draft' | 'published'
   created_at: string
 }
 

@@ -1,6 +1,8 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createSection } from '@/app/admin/actions'
+import { createSection, updateExamStatus } from '@/app/admin/actions'
 import type { Section } from '@/types/database'
+
+export const dynamic = 'force-dynamic'
 
 type Props = { params: Promise<{ examId: string }> }
 
@@ -28,12 +30,44 @@ export default async function ExamPage({ params }: Props) {
         <a href="/admin" className="text-sm text-gray-500 hover:text-gray-700">
           ← Exams
         </a>
-        <h1 className="text-xl font-bold text-gray-900 mt-1">
-          {exam.subject} — Paper {exam.paper_number} ({exam.year})
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          {exam.paper_type} · {exam.duration_minutes} min · {exam.total_marks} marks
-        </p>
+        <div className="flex items-center gap-3 mt-1">
+          <h1 className="text-xl font-bold text-gray-900">
+            {exam.subject} — Paper {exam.paper_number} ({exam.year})
+          </h1>
+          <span
+            className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+              exam.status === 'published'
+                ? 'bg-green-100 text-green-700'
+                : 'bg-gray-100 text-gray-500'
+            }`}
+          >
+            {exam.status === 'published' ? 'Published' : 'Draft'}
+          </span>
+        </div>
+        <div className="flex items-center justify-between mt-1">
+          <p className="text-sm text-gray-500">
+            {exam.paper_type} · {exam.duration_minutes} min · {exam.total_marks} marks
+          </p>
+          {exam.status === 'draft' ? (
+            <form action={updateExamStatus.bind(null, examId, 'published')}>
+              <button
+                type="submit"
+                className="text-sm font-semibold bg-green-600 text-white px-4 py-1.5 rounded-lg hover:bg-green-700 transition-colors"
+              >
+                Publish Exam
+              </button>
+            </form>
+          ) : (
+            <form action={updateExamStatus.bind(null, examId, 'draft')}>
+              <button
+                type="submit"
+                className="text-sm font-semibold bg-gray-100 text-gray-700 px-4 py-1.5 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Move to Draft
+              </button>
+            </form>
+          )}
+        </div>
       </div>
 
       {/* Sections list */}

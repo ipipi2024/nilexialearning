@@ -32,9 +32,20 @@ export default async function AdminPage() {
                 href={`/admin/exams/${exam.id}`}
                 className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-4 py-3 hover:border-blue-300 transition-colors"
               >
-                <span className="font-medium text-gray-900">
-                  {exam.subject} — Paper {exam.paper_number} ({exam.year})
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="font-medium text-gray-900">
+                    {exam.subject} — Paper {exam.paper_number} ({exam.year})
+                  </span>
+                  <span
+                    className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                      exam.status === 'published'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-gray-100 text-gray-500'
+                    }`}
+                  >
+                    {exam.status === 'published' ? 'Published' : 'Draft'}
+                  </span>
+                </div>
                 <span className="text-sm text-gray-400">
                   {exam.paper_type} · {exam.total_marks} marks · {exam.duration_minutes} min →
                 </span>

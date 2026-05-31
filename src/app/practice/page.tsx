@@ -16,6 +16,7 @@ export default async function PracticePage() {
   const { data: exams } = await supabase
     .from('exams')
     .select('*')
+    .eq('status', 'published')
     .order('year', { ascending: false })
 
   return (

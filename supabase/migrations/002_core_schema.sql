@@ -40,6 +40,8 @@ create table public.exams (
   paper_type       text        not null default 'objective',
   duration_minutes int         not null,
   total_marks      int         not null,
+  status           text        not null default 'draft'
+                               check (status in ('draft', 'published')),
   created_at       timestamptz default now() not null
 );
 
@@ -180,26 +182,53 @@ create policy "profiles: update own"
   using (auth.uid() = id);
 
 
--- exam content: any authenticated user can read
-create policy "exams: authenticated read"
+-- exam content: students may only read published exams and their dependent content.
+-- admin uses the service role which bypasses RLS and sees everything.
+create policy "exams: authenticated read published"
   on public.exams for select
-  using (auth.role() = 'authenticated');
+  using (auth.role() = 'authenticated' and status = 'published');
 
-create policy "sections: authenticated read"
+create policy "sections: authenticated read published"
   on public.sections for select
-  using (auth.role() = 'authenticated');
+  using (
+    exists (
+      select 1 from public.exams
+      where exams.id = sections.exam_id
+        and exams.status = 'published'
+    )
+  );
 
-create policy "questions: authenticated read"
+create policy "questions: authenticated read published"
   on public.questions for select
-  using (auth.role() = 'authenticated');
+  using (
+    exists (
+      select 1 from public.exams
+      where exams.id = questions.exam_id
+        and exams.status = 'published'
+    )
+  );
 
-create policy "choices: authenticated read"
+create policy "choices: authenticated read published"
   on public.choices for select
-  using (auth.role() = 'authenticated');
+  using (
+    exists (
+      select 1 from public.questions q
+      join public.exams e on e.id = q.exam_id
+      where q.id = choices.question_id
+        and e.status = 'published'
+    )
+  );
 
-create policy "explanation_blocks: authenticated read"
+create policy "explanation_blocks: authenticated read published"
   on public.explanation_blocks for select
-  using (auth.role() = 'authenticated');
+  using (
+    exists (
+      select 1 from public.questions q
+      join public.exams e on e.id = q.exam_id
+      where q.id = explanation_blocks.question_id
+        and e.status = 'published'
+    )
+  );
 
 
 -- attempts: users access only their own

@@ -43,6 +43,26 @@ export async function createExam(formData: FormData) {
 }
 
 // ------------------------------------------------------------------
+// Exam status
+// ------------------------------------------------------------------
+
+export async function updateExamStatus(
+  examId: string,
+  status: 'draft' | 'published'
+) {
+  const admin = await requireAdmin()
+
+  const { error } = await admin
+    .from('exams')
+    .update({ status })
+    .eq('id', examId)
+
+  if (error) throw new Error(error.message)
+
+  redirect(`/admin/exams/${examId}`)
+}
+
+// ------------------------------------------------------------------
 // Section
 // ------------------------------------------------------------------
 
