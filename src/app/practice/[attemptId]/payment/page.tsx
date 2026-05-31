@@ -5,6 +5,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { submitPaymentRequest } from '@/app/practice/actions'
+import { PaymentDetails } from '@/components/PaymentDetails'
 
 type Props = {
   params: Promise<{ attemptId: string }>
@@ -73,20 +74,30 @@ export default async function PaymentPage({ params, searchParams }: Props) {
 
         {/* Pending notice */}
         {pendingRequest ? (
-          <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-xl px-5 py-5 space-y-2">
-            <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">Payment Under Review</p>
-            <p className="text-sm text-amber-700 dark:text-amber-500">
-              Your payment proof has been submitted and is awaiting admin approval.
-              You will be able to start the exam once it is approved.
-            </p>
-            <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
-              Submitted{' '}
-              {new Date(pendingRequest.created_at).toLocaleDateString('en-AU', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              })}
-            </p>
+          <div className="space-y-4">
+            <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl px-5 py-5 space-y-2">
+              <p className="text-sm font-semibold text-green-800 dark:text-green-400">
+                Payment proof submitted successfully.
+              </p>
+              <p className="text-sm text-green-700 dark:text-green-500">
+                Your request is awaiting review.
+              </p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4 space-y-1">
+              <p className="text-xs text-gray-400 dark:text-gray-500">Status</p>
+              <div className="flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-amber-400" />
+                <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">Pending Review</p>
+              </div>
+              <p className="text-xs text-gray-400 dark:text-gray-500 pt-1">
+                Submitted{' '}
+                {new Date(pendingRequest.created_at).toLocaleDateString('en-AU', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                })}
+              </p>
+            </div>
           </div>
         ) : (
           <>
@@ -96,14 +107,7 @@ export default async function PaymentPage({ params, searchParams }: Props) {
               </div>
             )}
 
-            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-100 dark:border-blue-800 rounded-xl px-5 py-4 mb-6 space-y-1">
-              <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">Payment Instructions</p>
-              <p className="text-sm text-blue-700 dark:text-blue-400">
-                Transfer the exam fee to the bank account provided by your school or exam
-                coordinator. Then take a clear photo or screenshot of your receipt and upload it
-                below.
-              </p>
-            </div>
+            <PaymentDetails />
 
             <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
               <form
