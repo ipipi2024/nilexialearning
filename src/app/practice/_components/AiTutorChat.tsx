@@ -13,7 +13,13 @@ const MermaidDiagram = dynamic(
   { ssr: false, loading: () => <div className="text-xs text-gray-400 dark:text-gray-500 italic my-2">rendering diagram…</div> }
 )
 
-// Simple inline-SVG renderer for ```svg blocks (sanitized before rendering)
+// Lazy-load the function graph renderer
+const FunctionGraph = dynamic(
+  () => import('./FunctionGraph').then((m) => ({ default: m.FunctionGraph })),
+  { ssr: false }
+)
+
+// ```svg blocks — render sanitized SVG inline
 function SvgBlock({ code }: { code: string }) {
   const sanitized = code
     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
@@ -27,13 +33,28 @@ function SvgBlock({ code }: { code: string }) {
   )
 }
 
-// Custom ReactMarkdown component map — intercepts mermaid and svg code blocks
+// ```graph blocks — parse JSON spec and render function graph
+function GraphBlock({ code }: { code: string }) {
+  try {
+    const spec = JSON.parse(code)
+    return <FunctionGraph spec={spec} />
+  } catch {
+    return (
+      <pre className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 rounded-lg px-3 py-2 overflow-x-auto my-2 whitespace-pre-wrap">
+        {code}
+      </pre>
+    )
+  }
+}
+
+// Custom ReactMarkdown component map — intercepts mermaid, svg, and graph code blocks
 const MD_COMPONENTS = {
   code({ className, children }: React.HTMLAttributes<HTMLElement>) {
     const lang = /language-(\w+)/.exec(className ?? '')?.[1]
     const raw = String(children).replace(/\n$/, '')
     if (lang === 'mermaid') return <MermaidDiagram code={raw} />
     if (lang === 'svg') return <SvgBlock code={raw} />
+    if (lang === 'graph') return <GraphBlock code={raw} />
     return <code className={className}>{children}</code>
   },
 }

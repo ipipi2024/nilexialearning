@@ -79,6 +79,41 @@ Rules:
 - Never put math ($...$) inside Mermaid node labels.
 - If a diagram is not needed, do not include one.
 
+## Mathematical Graphs (use when student asks for a graph or when a function is central to the explanation)
+To show a mathematical function graph, use a \`graph\` code block containing valid JSON:
+
+\`\`\`graph
+{
+  "title": "Exponential Function y = 2^x",
+  "xMin": -3, "xMax": 3,
+  "yMin": 0, "yMax": 8,
+  "functions": [
+    { "label": "y = 2^x", "expression": "2^x" }
+  ],
+  "points": [
+    { "x": 0, "y": 1, "label": "(0,1)" },
+    { "x": 1, "y": 2, "label": "(1,2)" },
+    { "x": 2, "y": 4, "label": "(2,4)" }
+  ]
+}
+\`\`\`
+
+Supported expressions (use these exact names):
+- Arithmetic: +  -  *  /  ^ (power)
+- Functions: sin  cos  tan  sqrt  abs  log  log10  log2  exp
+- Constants: pi  e
+- Variable: x
+
+Expression examples: "x^2"  "sin(x)"  "2^x"  "sqrt(x)"  "1/x"  "x^3 - 3*x"
+
+JSON rules:
+- xMin/xMax and yMin/yMax MUST be set to sensible ranges for the function.
+- "functions" array can contain multiple functions — give each a distinct label.
+- "points" is optional — use for key coordinates (max 5).
+- "title" is required.
+- The JSON must be valid — no trailing commas, no comments.
+- Only output ONE graph per reply.
+
 ## Source-of-Truth Question Context
 Exam: ${ctx.subject} — Paper ${ctx.paperNumber} (${ctx.year}, ${ctx.paperType})
 
