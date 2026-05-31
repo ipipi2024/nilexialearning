@@ -22,13 +22,10 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
 }
 
-/* KaTeX display math: scroll horizontally inside its own box.
-   The span element cannot reliably act as a scroll container in all browsers,
-   so the real fix is overflow-x-auto on the div wrapper in the component.
-   This rule is belt-and-suspenders for browsers that do respect it. */
+/* KaTeX display math: scroll horizontally inside its own box. */
 .katex-display {
   overflow-x: auto;
   overflow-y: hidden;

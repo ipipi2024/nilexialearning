@@ -25,7 +25,7 @@ type Props = {
 
 function Md({ text }: { text: string }) {
   return (
-    <div className="text-sm text-gray-900 leading-relaxed break-words min-w-0">
+    <div className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed break-words min-w-0">
       <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
         {text}
       </ReactMarkdown>
@@ -34,7 +34,7 @@ function Md({ text }: { text: string }) {
 }
 
 const inputCls =
-  'w-full border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm font-mono text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500'
+  'w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-3 py-2 text-sm font-mono text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500'
 
 function DraftCard({
   draft,
@@ -66,21 +66,23 @@ function DraftCard({
 
   return (
     <div
-      className={`bg-white border rounded-xl p-5 space-y-5 ${
-        isDuplicate ? 'border-amber-400' : 'border-gray-200'
+      className={`bg-white dark:bg-gray-800 border rounded-xl p-5 space-y-5 ${
+        isDuplicate
+          ? 'border-amber-400 dark:border-amber-600'
+          : 'border-gray-200 dark:border-gray-700'
       }`}
     >
       {/* Card header */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-bold text-gray-700">Q{draft.number}</span>
+          <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Q{draft.number}</span>
           {draft.needs_review && (
-            <span className="text-xs font-medium bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">
+            <span className="text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-2 py-0.5 rounded-full">
               Needs Review
             </span>
           )}
           {isDuplicate && (
-            <span className="text-xs font-medium bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+            <span className="text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400 px-2 py-0.5 rounded-full">
               ⚠ Number already exists — change it below
             </span>
           )}
@@ -88,7 +90,7 @@ function DraftCard({
         <button
           type="button"
           onClick={onRemove}
-          className="text-xs text-red-500 hover:text-red-700 font-medium shrink-0"
+          className="text-xs text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium shrink-0"
         >
           Remove
         </button>
@@ -97,18 +99,18 @@ function DraftCard({
       {/* Edit fields */}
       <div className="space-y-4">
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Question No.</label>
+          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Question No.</label>
           <input
             type="number"
             min="1"
             value={draft.number}
             onChange={(e) => set('number', parseInt(e.target.value) || draft.number)}
-            className="w-24 border border-gray-300 bg-white rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-24 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Question Text</label>
+          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Question Text</label>
           <textarea
             rows={3}
             value={draft.question_text}
@@ -118,7 +120,7 @@ function DraftCard({
         </div>
 
         <div className="space-y-2">
-          <label className="block text-xs font-medium text-gray-500">
+          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400">
             Choices — select the correct answer with the radio button
           </label>
           {draft.choices.map((c) => (
@@ -131,19 +133,19 @@ function DraftCard({
                 className="shrink-0 accent-green-600"
                 title={`Mark ${c.label} as correct`}
               />
-              <span className="text-xs font-bold text-gray-500 w-4 shrink-0">{c.label}</span>
+              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 w-4 shrink-0">{c.label}</span>
               <input
                 type="text"
                 value={c.text}
                 onChange={(e) => setChoiceText(c.label, e.target.value)}
-                className="flex-1 border border-gray-300 bg-white rounded-lg px-3 py-1.5 text-sm font-mono text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-3 py-1.5 text-sm font-mono text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           ))}
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Explanation</label>
+          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Explanation</label>
           <textarea
             rows={4}
             value={draft.explanation}
@@ -153,13 +155,13 @@ function DraftCard({
         </div>
       </div>
 
-      {/* Rendered preview */}
-      <div className="border-t border-gray-100 pt-4 space-y-3">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+      {/* Student preview */}
+      <div className="border-t border-gray-100 dark:border-gray-700 pt-4 space-y-3">
+        <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">
           Student Preview
         </p>
 
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+        <div className="bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
           <Md text={draft.question_text} />
         </div>
 
@@ -169,24 +171,24 @@ function DraftCard({
               key={c.label}
               className={`flex items-start gap-2 rounded-xl border px-3 py-2 ${
                 c.is_correct
-                  ? 'bg-green-50 border-green-300'
-                  : 'bg-white border-gray-200'
+                  ? 'bg-green-50 dark:bg-green-950 border-green-300 dark:border-green-700'
+                  : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
               }`}
             >
-              <span className="text-xs font-bold text-gray-500 mt-0.5 shrink-0">{c.label}</span>
+              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 mt-0.5 shrink-0">{c.label}</span>
               <div className="flex-1 min-w-0">
                 <Md text={c.text} />
               </div>
               {c.is_correct && (
-                <span className="text-xs text-green-600 font-medium shrink-0 mt-0.5">✓</span>
+                <span className="text-xs text-green-600 dark:text-green-400 font-medium shrink-0 mt-0.5">✓</span>
               )}
             </li>
           ))}
         </ul>
 
         {draft.explanation && (
-          <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-            <p className="text-xs font-semibold text-blue-600 mb-2">Explanation</p>
+          <div className="bg-blue-50 dark:bg-blue-950 border border-blue-100 dark:border-blue-800 rounded-xl px-4 py-3">
+            <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-2">Explanation</p>
             <Md text={draft.explanation} />
           </div>
         )}
@@ -244,23 +246,23 @@ export function AiImportShell({ examId, sectionId, existingNumbers }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* ── Upload step ── */}
+      {/* Upload step */}
       {step === 'upload' && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6 max-w-lg">
-          <h2 className="text-base font-semibold text-gray-900 mb-1">Upload Exam Screenshot</h2>
-          <p className="text-sm text-gray-500 mb-5">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 max-w-lg">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-1">Upload Exam Screenshot</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
             AI will extract questions and generate draft data for your review.
           </p>
 
           {error && (
-            <div className="mb-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+            <div className="mb-4 text-sm text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3">
               {error}
             </div>
           )}
 
           <form onSubmit={handleGenerate} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Screenshot Image
               </label>
               <input
@@ -268,15 +270,15 @@ export function AiImportShell({ examId, sectionId, existingNumbers }: Props) {
                 type="file"
                 accept="image/*"
                 required
-                className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-gray-300 file:text-sm file:font-medium file:bg-white file:text-gray-700 hover:file:bg-gray-50"
+                className="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-gray-300 dark:file:border-gray-600 file:text-sm file:font-medium file:bg-white dark:file:bg-gray-700 file:text-gray-700 dark:file:text-gray-300 hover:file:bg-gray-50 dark:hover:file:bg-gray-600"
               />
-              <p className="text-xs text-gray-400 mt-1">PNG, JPEG, or WEBP. Max ~10 MB.</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">PNG, JPEG, or WEBP. Max ~10 MB.</p>
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60 text-sm"
+              className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-60 text-sm"
             >
               {isLoading ? 'Generating… this may take 10–20 seconds' : 'Generate Questions'}
             </button>
@@ -284,18 +286,17 @@ export function AiImportShell({ examId, sectionId, existingNumbers }: Props) {
         </div>
       )}
 
-      {/* ── Preview / edit step ── */}
+      {/* Preview step */}
       {step === 'preview' && (
         <>
-          {/* Summary bar */}
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold text-gray-900">
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">
                 {drafts.length} question{drafts.length !== 1 ? 's' : ''} extracted — review and
                 edit before saving
               </p>
               {hasDuplicates && (
-                <p className="text-xs text-amber-700 mt-0.5">
+                <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
                   Some numbers already exist in this section. Edit them before saving.
                 </p>
               )}
@@ -307,14 +308,14 @@ export function AiImportShell({ examId, sectionId, existingNumbers }: Props) {
                 setDrafts([])
                 setError(null)
               }}
-              className="text-sm text-gray-500 hover:text-gray-700 shrink-0"
+              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 shrink-0 transition-colors"
             >
               ← Start over
             </button>
           </div>
 
           {drafts.length === 0 ? (
-            <p className="text-sm text-gray-500">All questions removed.</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">All questions removed.</p>
           ) : (
             <div className="space-y-6">
               {drafts.map((draft, i) => (

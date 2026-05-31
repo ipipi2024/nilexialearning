@@ -113,21 +113,21 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
   const selfCheck = selfChecks[question.id]
 
   return (
-    <main className="min-h-screen bg-gray-50 min-w-0">
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-950 min-w-0">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-400 dark:text-gray-500">
               {exam.subject} — Paper {exam.paper_number} ({exam.year})
             </p>
-            <p className="text-sm font-semibold text-gray-800">
+            <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
               Question {question.number} of {total}
             </p>
           </div>
           <a
             href="/practice"
-            className="text-sm text-gray-500 hover:text-gray-700"
+            className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
           >
             ← Exit
           </a>
@@ -135,31 +135,32 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
       </header>
 
       {/* Progress bar */}
-      <div className="w-full h-1 bg-gray-200">
+      <div className="w-full h-1 bg-gray-200 dark:bg-gray-800">
         <div
           className="h-1 bg-blue-500 transition-all duration-300"
           style={{ width: `${((currentIndex + 1) / total) * 100}%` }}
         />
       </div>
 
-      {/* Question card */}
+      {/* Content */}
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
-        {/* Question text */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        {/* Question card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
           <div className="flex items-start justify-between gap-2 mb-3">
-            <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+            <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 px-2 py-0.5 rounded-full">
               Q{question.number}
             </span>
-            <span className="text-xs text-gray-400">{question.marks} mark{question.marks !== 1 ? 's' : ''}</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500">
+              {question.marks} mark{question.marks !== 1 ? 's' : ''}
+            </span>
           </div>
           <div className="overflow-x-auto">
-            <div className="text-gray-900 leading-relaxed prose prose-sm max-w-none break-words min-w-0">
+            <div className="text-gray-900 dark:text-gray-100 leading-relaxed prose prose-sm max-w-none break-words min-w-0 dark:prose-invert">
               <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                 {question.question_text}
               </ReactMarkdown>
             </div>
           </div>
-          {/* Question image — below text, matching admin view order */}
           {question.question_image_url && (
             <ZoomableImage
               src={question.question_image_url}
@@ -175,15 +176,15 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
           <div className="space-y-2">
             {question.choices.map((choice) => {
               const isSelected = currentAnswer === choice.label
-              let borderColor = 'border-gray-200 hover:border-blue-300'
+              let variantCls = 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-300 dark:hover:border-blue-500'
               if (isRevealed && isSelected) {
-                borderColor = choice.is_correct
-                  ? 'border-green-500 bg-green-50'
-                  : 'border-red-400 bg-red-50'
+                variantCls = choice.is_correct
+                  ? 'border-green-500 bg-green-50 dark:bg-green-950 dark:border-green-600'
+                  : 'border-red-400 bg-red-50 dark:bg-red-950 dark:border-red-600'
               } else if (isRevealed && choice.is_correct) {
-                borderColor = 'border-green-400 bg-green-50'
+                variantCls = 'border-green-400 bg-green-50 dark:bg-green-950 dark:border-green-600'
               } else if (isSelected) {
-                borderColor = 'border-blue-500 bg-blue-50'
+                variantCls = 'border-blue-500 bg-blue-50 dark:bg-blue-950 dark:border-blue-500'
               }
 
               return (
@@ -191,14 +192,14 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
                   key={choice.id}
                   onClick={() => handleMCSelect(choice.label)}
                   disabled={isRevealed}
-                  className={`w-full flex items-start gap-3 bg-white border rounded-xl px-4 py-3 text-left transition-colors ${borderColor}`}
+                  className={`w-full flex items-start gap-3 border rounded-xl px-4 py-3 text-left transition-colors ${variantCls}`}
                 >
-                  <span className="text-sm font-bold text-gray-500 w-5 shrink-0 mt-0.5">
+                  <span className="text-sm font-bold text-gray-500 dark:text-gray-400 w-5 shrink-0 mt-0.5">
                     {choice.label}
                   </span>
                   <span className="flex-1 min-w-0">
                     {choice.text && (
-                      <span className="text-sm text-gray-800 block">
+                      <span className="text-sm text-gray-800 dark:text-gray-200 block">
                         <ReactMarkdown
                           remarkPlugins={[remarkMath]}
                           rehypePlugins={[rehypeKatex]}
@@ -209,8 +210,6 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
                       </span>
                     )}
                     {choice.choice_image_url && (
-                      // Wrap in span to stop propagation so tapping the image
-                      // zooms it rather than selecting the answer
                       <span
                         className={`block${choice.text ? ' mt-2' : ''}`}
                         onClick={(e) => e.stopPropagation()}
@@ -229,7 +228,7 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
           </div>
         ) : (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Your Answer
             </label>
             <textarea
@@ -237,16 +236,16 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
               defaultValue={currentAnswer}
               onBlur={(e) => handleTextBlur(e.target.value)}
               placeholder="Write your answer here…"
-              className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             />
           </div>
         )}
 
-        {/* Self-check for non-MC */}
+        {/* Reveal button (non-MC only, before reveal) */}
         {question.question_type !== 'multiple_choice' && !isRevealed && (
           <button
             onClick={handleReveal}
-            className="w-full border border-blue-300 text-blue-600 font-semibold py-2.5 rounded-xl hover:bg-blue-50 transition-colors text-sm"
+            className="w-full border border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 font-semibold py-2.5 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors text-sm"
           >
             Show Explanation
           </button>
@@ -254,26 +253,26 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
 
         {/* Explanation */}
         {isRevealed && (
-          <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
-            <p className="text-sm font-semibold text-gray-700">Explanation</p>
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 space-y-4">
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Explanation</p>
             <ExplanationRenderer blocks={question.explanation_blocks} />
 
-            {/* Self-check buttons for SA/LR */}
+            {/* Self-check for SA/LR */}
             {question.question_type !== 'multiple_choice' && (
-              <div className="pt-2 border-t border-gray-100">
+              <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
                 {selfCheck == null ? (
                   <div className="space-y-2">
-                    <p className="text-sm text-gray-600 font-medium">How did you go?</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">How did you go?</p>
                     <div className="flex gap-3">
                       <button
                         onClick={() => handleSelfCheck(true)}
-                        className="flex-1 bg-green-50 border border-green-300 text-green-700 font-semibold py-2 rounded-xl hover:bg-green-100 transition-colors text-sm"
+                        className="flex-1 bg-green-50 dark:bg-green-950 border border-green-300 dark:border-green-700 text-green-700 dark:text-green-400 font-semibold py-2 rounded-xl hover:bg-green-100 dark:hover:bg-green-900 transition-colors text-sm"
                       >
                         Got it right
                       </button>
                       <button
                         onClick={() => handleSelfCheck(false)}
-                        className="flex-1 bg-red-50 border border-red-300 text-red-700 font-semibold py-2 rounded-xl hover:bg-red-100 transition-colors text-sm"
+                        className="flex-1 bg-red-50 dark:bg-red-950 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 font-semibold py-2 rounded-xl hover:bg-red-100 dark:hover:bg-red-900 transition-colors text-sm"
                       >
                         Got it wrong
                       </button>
@@ -283,8 +282,8 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
                   <div
                     className={`text-sm font-semibold px-3 py-2 rounded-lg ${
                       selfCheck
-                        ? 'bg-green-50 text-green-700'
-                        : 'bg-red-50 text-red-700'
+                        ? 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-400'
+                        : 'bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-400'
                     }`}
                   >
                     {selfCheck ? 'Marked as correct' : 'Marked as incorrect'}
@@ -297,7 +296,9 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
             {question.question_type === 'multiple_choice' && selfCheck != null && (
               <div
                 className={`text-sm font-semibold px-3 py-2 rounded-lg ${
-                  selfCheck ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                  selfCheck
+                    ? 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-400'
+                    : 'bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-400'
                 }`}
               >
                 {selfCheck ? 'Correct!' : 'Incorrect'}
@@ -306,13 +307,13 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
           </div>
         )}
 
-        {/* Video tutorial — shown after explanation is revealed */}
+        {/* Video tutorial */}
         {isRevealed && question.tutorial_video_url && (() => {
           const embedUrl = getYouTubeEmbedUrl(question.tutorial_video_url)
           if (!embedUrl) return null
           return (
-            <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-3">
-              <p className="text-sm font-semibold text-gray-700">Video Tutorial</p>
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 space-y-3">
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Video Tutorial</p>
               <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
                 <iframe
                   src={embedUrl}
@@ -327,39 +328,36 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
 
         {/* Navigation */}
         <div className="pt-2 space-y-3">
-          {/* Prev / Next row */}
           <div className="flex items-center justify-between gap-2">
             <button
               onClick={() => navigateTo(Math.max(0, currentIndex - 1))}
               disabled={currentIndex === 0}
-              className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition-colors"
+              className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 transition-colors"
             >
               ← Previous
             </button>
-            <span className="text-xs text-gray-500 shrink-0">
+            <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">
               {currentIndex + 1} / {total}
             </span>
             <button
               onClick={() => navigateTo(Math.min(total - 1, currentIndex + 1))}
               disabled={currentIndex === total - 1}
-              className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition-colors"
+              className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 transition-colors"
             >
               Next →
             </button>
           </div>
 
-          {/* Question navigator card */}
-          <div className="bg-white rounded-xl border border-gray-200 p-3">
-            {/* Mobile toggle — hidden on sm+ where grid is always shown */}
+          {/* Question navigator */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
             <button
-              className="sm:hidden w-full flex items-center justify-between text-sm font-medium text-gray-700 py-0.5"
+              className="sm:hidden w-full flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300 py-0.5"
               onClick={() => setNavOpen((o) => !o)}
             >
               <span>Questions</span>
-              <span className="text-gray-400 text-xs">{navOpen ? '▲ Hide' : '▼ Show'}</span>
+              <span className="text-gray-400 dark:text-gray-500 text-xs">{navOpen ? '▲ Hide' : '▼ Show'}</span>
             </button>
 
-            {/* Grid: toggle-controlled on mobile, always visible on sm+ */}
             <div className={`${navOpen ? 'block' : 'hidden'} sm:block mt-2 sm:mt-0`}>
               <div className="flex flex-wrap gap-1.5">
                 {questions.map((q, i) => {
@@ -373,8 +371,8 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
                         isCurrent
                           ? 'bg-blue-600 text-white'
                           : answered
-                          ? 'bg-green-100 text-green-800 border border-green-300'
-                          : 'bg-gray-100 text-gray-500 border border-gray-200 hover:bg-gray-200'
+                          ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-400 border border-green-300 dark:border-green-700'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
                       }`}
                     >
                       {q.number}
@@ -387,7 +385,7 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
         </div>
 
         {isPending && (
-          <p className="text-center text-xs text-gray-400">Saving…</p>
+          <p className="text-center text-xs text-gray-400 dark:text-gray-500">Saving…</p>
         )}
       </div>
     </main>

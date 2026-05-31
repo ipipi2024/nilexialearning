@@ -17,25 +17,13 @@ export default async function QuestionPage({ params }: Props) {
   const [{ data: question }, { data: choices }, { data: blocks }, { data: sectionQuestions }] =
     await Promise.all([
       admin.from('questions').select('*').eq('id', questionId).single(),
-      admin
-        .from('choices')
-        .select('*')
-        .eq('question_id', questionId)
-        .order('label'),
-      admin
-        .from('explanation_blocks')
-        .select('*')
-        .eq('question_id', questionId)
-        .order('block_order'),
-      admin
-        .from('questions')
-        .select('id, number')
-        .eq('section_id', sectionId)
-        .order('number'),
+      admin.from('choices').select('*').eq('question_id', questionId).order('label'),
+      admin.from('explanation_blocks').select('*').eq('question_id', questionId).order('block_order'),
+      admin.from('questions').select('id, number').eq('section_id', sectionId).order('number'),
     ])
 
   if (!question) {
-    return <p className="text-gray-500">Question not found.</p>
+    return <p className="text-gray-500 dark:text-gray-400">Question not found.</p>
   }
 
   const nextBlockOrder = (blocks?.length ?? 0) + 1
@@ -57,67 +45,63 @@ export default async function QuestionPage({ params }: Props) {
           previousQuestion={previousQuestion}
           nextQuestion={nextQuestion}
         />
-        <h1 className="text-xl font-bold text-gray-900">
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">
           Question {question.number}
         </h1>
       </div>
 
       {/* Question card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-3">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded">
+            <span className="text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-1 rounded">
               {question.question_type === 'multiple_choice'
                 ? 'Multiple Choice'
                 : question.question_type === 'short_answer'
                 ? 'Short Answer'
                 : 'Long Response'}
             </span>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-gray-400 dark:text-gray-500">
               {question.marks} mark{question.marks !== 1 ? 's' : ''}
             </span>
           </div>
           <div className="flex items-center gap-4">
             <a
               href={`/admin/exams/${examId}/sections/${sectionId}/questions/${questionId}/edit`}
-              className="text-sm font-medium text-blue-600 hover:text-blue-700"
+              className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
             >
-              Edit Question
+              Edit
             </a>
-            <DeleteQuestionButton
-              questionId={questionId}
-              examId={examId}
-              sectionId={sectionId}
-            />
+            <DeleteQuestionButton questionId={questionId} examId={examId} sectionId={sectionId} />
             <a
               href={`/admin/exams/${examId}/sections/${sectionId}/questions/new?number=${question.number + 1}`}
-              className="text-sm font-medium text-green-600 hover:text-green-700"
+              className="text-sm font-medium text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
             >
-              + Add Next Question
+              + Next Question
             </a>
           </div>
         </div>
-        <p className="text-gray-900 whitespace-pre-wrap">{question.question_text}</p>
+        <p className="text-gray-900 dark:text-gray-100 whitespace-pre-wrap">{question.question_text}</p>
         {question.question_image_url && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={question.question_image_url}
             alt="Question"
-            className="max-w-full h-auto rounded-lg border border-gray-200 mt-2"
+            className="max-w-full h-auto rounded-xl border border-gray-200 dark:border-gray-700 mt-2"
           />
         )}
         {question.tutorial_video_url && (() => {
           const embedUrl = getYouTubeEmbedUrl(question.tutorial_video_url)
           return (
             <div className="mt-3 space-y-2">
-              <p className="text-xs font-medium text-gray-500">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
                 Tutorial Video:{' '}
-                <span className="font-normal text-gray-400 break-all">
+                <span className="font-normal text-gray-400 dark:text-gray-500 break-all">
                   {question.tutorial_video_url}
                 </span>
               </p>
               {embedUrl && (
-                <div className="aspect-video w-full max-w-sm overflow-hidden rounded-lg bg-black">
+                <div className="aspect-video w-full max-w-sm overflow-hidden rounded-xl bg-black">
                   <iframe
                     src={embedUrl}
                     className="h-full w-full"
@@ -131,39 +115,37 @@ export default async function QuestionPage({ params }: Props) {
         })()}
       </div>
 
-      {/* Choices (multiple choice only) */}
+      {/* Choices */}
       {question.question_type === 'multiple_choice' && (
         <div>
-          <h2 className="text-base font-semibold text-gray-900 mb-3">
-            Answer Choices
-          </h2>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-3">Answer Choices</h2>
           {!choices?.length ? (
-            <p className="text-sm text-gray-500">No choices saved.</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">No choices saved.</p>
           ) : (
             <ul className="space-y-2">
               {choices.map((c: Choice) => (
                 <li
                   key={c.id}
-                  className={`flex items-start gap-3 rounded-lg border px-4 py-2.5 ${
+                  className={`flex items-start gap-3 rounded-xl border px-4 py-2.5 ${
                     c.is_correct
-                      ? 'border-green-300 bg-green-50'
-                      : 'border-gray-200 bg-white'
+                      ? 'border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-950'
+                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
                   }`}
                 >
-                  <span className="font-semibold text-gray-600 w-4 shrink-0 mt-0.5">{c.label}</span>
-                  <span className="text-sm text-gray-900 flex-1 min-w-0">
+                  <span className="font-semibold text-gray-600 dark:text-gray-400 w-4 shrink-0 mt-0.5">{c.label}</span>
+                  <span className="text-sm text-gray-900 dark:text-gray-100 flex-1 min-w-0">
                     {c.text && <span className="block">{c.text}</span>}
                     {c.choice_image_url && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={c.choice_image_url}
                         alt={`Choice ${c.label}`}
-                        className={`max-w-xs h-auto rounded-lg border border-gray-200${c.text ? ' mt-2' : ''}`}
+                        className={`max-w-xs h-auto rounded-lg border border-gray-200 dark:border-gray-700${c.text ? ' mt-2' : ''}`}
                       />
                     )}
                   </span>
                   {c.is_correct && (
-                    <span className="text-xs text-green-600 font-medium shrink-0">✓ Correct</span>
+                    <span className="text-xs text-green-600 dark:text-green-400 font-medium shrink-0">✓ Correct</span>
                   )}
                 </li>
               ))}
@@ -174,30 +156,30 @@ export default async function QuestionPage({ params }: Props) {
 
       {/* Explanation blocks */}
       <div>
-        <h2 className="text-base font-semibold text-gray-900 mb-3">Explanation</h2>
+        <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-3">Explanation</h2>
 
         {!blocks?.length ? (
-          <p className="text-sm text-gray-500 mb-4">No explanation blocks yet.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">No explanation blocks yet.</p>
         ) : (
           <div className="space-y-3 mb-4">
             {blocks.map((block: ExplanationBlock) => (
               <div
                 key={block.id}
-                className="bg-white border border-gray-200 rounded-xl p-4"
+                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-gray-400">
+                  <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
                     #{block.block_order} · {block.block_type}
                   </span>
                   <a
                     href={`/admin/exams/${examId}/sections/${sectionId}/questions/${questionId}/explanation-blocks/${block.id}/edit`}
-                    className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                    className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
                   >
                     Edit
                   </a>
                 </div>
                 {block.block_type === 'text' ? (
-                  <p className="text-sm text-gray-800 whitespace-pre-wrap">
+                  <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
                     {block.content}
                   </p>
                 ) : (
@@ -205,7 +187,7 @@ export default async function QuestionPage({ params }: Props) {
                   <img
                     src={block.content}
                     alt={`Explanation block ${block.block_order}`}
-                    className="max-w-full h-auto rounded-lg border border-gray-200"
+                    className="max-w-full h-auto rounded-lg border border-gray-200 dark:border-gray-700"
                   />
                 )}
               </div>
@@ -213,12 +195,11 @@ export default async function QuestionPage({ params }: Props) {
           </div>
         )}
 
-        {/* Add explanation block — inline collapsible */}
-        <details className="bg-white border border-gray-200 rounded-xl">
-          <summary className="px-4 py-3 text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-50 rounded-xl select-none">
+        <details className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl">
+          <summary className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-xl select-none">
             + Add Explanation Block
           </summary>
-          <div className="px-4 pb-4 pt-2 border-t border-gray-100">
+          <div className="px-4 pb-4 pt-2 border-t border-gray-100 dark:border-gray-700">
             <ExplanationBlockForm
               questionId={questionId}
               examId={examId}

@@ -24,7 +24,9 @@ type Props = {
 }
 
 const inputClass =
-  'w-full border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500'
+  'w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500'
+
+const labelClass = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'
 
 function defaultTypeForNumber(n: number | undefined): QuestionType {
   return n !== undefined && n >= 31 ? 'short_answer' : 'multiple_choice'
@@ -44,7 +46,6 @@ export function QuestionForm({
   const [correctChoice, setCorrectChoice] = useState(
     defaultValues?.choices?.find((c) => c.is_correct)?.label ?? 'A'
   )
-  // Once the user manually picks a type we stop auto-updating it on number change.
   const [typeOverridden, setTypeOverridden] = useState(false)
 
   function handleTypeChange(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -68,9 +69,7 @@ export function QuestionForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="number">
-            Question No.
-          </label>
+          <label className={labelClass} htmlFor="number">Question No.</label>
           <input
             id="number"
             name="number"
@@ -83,9 +82,7 @@ export function QuestionForm({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="marks">
-            Marks
-          </label>
+          <label className={labelClass} htmlFor="marks">Marks</label>
           <input
             id="marks"
             name="marks"
@@ -99,9 +96,7 @@ export function QuestionForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="question_type">
-          Question Type
-        </label>
+        <label className={labelClass} htmlFor="question_type">Question Type</label>
         <select
           id="question_type"
           name="question_type"
@@ -114,16 +109,14 @@ export function QuestionForm({
           <option value="long_response">Long Response</option>
         </select>
         {mode === 'create' && (
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
             Q1–30 → Multiple Choice &nbsp;·&nbsp; Q31–50 → Short Answer
           </p>
         )}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="question_text">
-          Question Text
-        </label>
+        <label className={labelClass} htmlFor="question_text">Question Text</label>
         <textarea
           id="question_text"
           name="question_text"
@@ -141,9 +134,9 @@ export function QuestionForm({
       />
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="tutorial_video_url">
+        <label className={labelClass} htmlFor="tutorial_video_url">
           Tutorial Video URL{' '}
-          <span className="font-normal text-gray-400">(optional)</span>
+          <span className="font-normal text-gray-400 dark:text-gray-500">(optional)</span>
         </label>
         <input
           id="tutorial_video_url"
@@ -155,23 +148,23 @@ export function QuestionForm({
         />
       </div>
 
-      {/* Choices — only shown for multiple choice */}
+      {/* Choices — multiple choice only */}
       {questionType === 'multiple_choice' && (
-        <div className="border border-gray-200 rounded-xl p-4 space-y-3">
-          <p className="text-sm font-medium text-gray-700">Answer Choices</p>
+        <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Answer Choices</p>
 
           {(['A', 'B', 'C', 'D'] as const).map((label) => {
             const existing = defaultValues?.choices?.find((c) => c.label === label)
             return (
               <div key={label} className="space-y-1.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-gray-500 w-5 shrink-0">{label}</span>
+                  <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 w-5 shrink-0">{label}</span>
                   <input
                     name={`choice_${label}`}
                     type="text"
                     placeholder={`Choice ${label} text`}
                     defaultValue={existing?.text ?? ''}
-                    className="flex-1 border border-gray-300 bg-white rounded-lg px-3 py-1.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div className="pl-7">
@@ -186,18 +179,13 @@ export function QuestionForm({
           })}
 
           <div>
-            <label
-              className="block text-sm font-medium text-gray-700 mb-1"
-              htmlFor="correct_choice"
-            >
-              Correct Answer
-            </label>
+            <label className={labelClass} htmlFor="correct_choice">Correct Answer</label>
             <select
               id="correct_choice"
               name="correct_choice"
               value={correctChoice}
               onChange={(e) => setCorrectChoice(e.target.value)}
-              className="border border-gray-300 bg-white rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {(['A', 'B', 'C', 'D'] as const).map((l) => (
                 <option key={l} value={l}>{l}</option>
@@ -209,7 +197,7 @@ export function QuestionForm({
 
       <button
         type="submit"
-        className="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition-colors"
+        className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-xl hover:bg-blue-700 transition-colors"
       >
         {mode === 'edit' ? 'Save Changes' : 'Save Question'}
       </button>
