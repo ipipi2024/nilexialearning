@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PNG Exam Practice Platform",
-  description: "Practice PNG Grade 12 past exam papers online.",
+  title: 'Nilexia',
+  description: 'Practice PNG national exam papers on your phone with explanations and progress tracking.',
 };
 
 export default function RootLayout({
