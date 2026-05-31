@@ -21,14 +21,22 @@ export default async function DashboardPage() {
           <a href="/" className="font-bold text-gray-900 dark:text-white text-lg tracking-tight">
             CQORIA
           </a>
-          <form action={logout}>
-            <SubmitButton
-              pendingText="Logging out..."
+          <div className="flex items-center gap-1">
+            <a
+              href="/profile"
               className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              Logout
-            </SubmitButton>
-          </form>
+              Profile
+            </a>
+            <form action={logout}>
+              <SubmitButton
+                pendingText="Logging out..."
+                className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                Logout
+              </SubmitButton>
+            </form>
+          </div>
         </div>
       </header>
 
