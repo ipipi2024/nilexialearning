@@ -128,3 +128,15 @@ export type AiTutorMessage = {
   content: string
   created_at: string
 }
+
+export type AiTutorAttachment = {
+  id: string
+  message_id: string | null
+  user_id: string
+  question_id: string
+  file_url: string
+  file_name: string | null
+  file_type: string | null
+  file_size: number | null
+  created_at: string
+}
