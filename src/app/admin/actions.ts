@@ -4,7 +4,12 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { isAdmin } from '@/lib/admin'
-import { sendStudentPaymentApproved, sendStudentPaymentRejected } from '@/lib/email'
+import {
+  sendStudentPaymentApproved,
+  sendStudentPaymentRejected,
+  sendStudentAiPlanApproved,
+  sendStudentAiPlanRejected,
+} from '@/lib/email'
 
 // Gate every admin action — returns the admin client on success.
 async function requireAdmin() {
@@ -568,6 +573,109 @@ export async function rejectPaymentRequest(formData: FormData) {
   }
 
   redirect('/admin/payments')
+}
+
+// ------------------------------------------------------------------
+// AI Plan Payment Review
+// ------------------------------------------------------------------
+
+export async function approveAiPaymentRequest(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user || !isAdmin(user.email)) redirect('/dashboard')
+  const admin = createAdminClient()
+
+  const requestId = formData.get('request_id') as string
+
+  // Fetch request + plan in parallel
+  const { data: req } = await admin
+    .from('ai_payment_requests')
+    .select('user_id, user_email, plan_id, ai_credit_plans(name, monthly_message_limit)')
+    .eq('id', requestId)
+    .maybeSingle()
+
+  if (!req) redirect('/admin/ai-payments')
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const plan = (req.ai_credit_plans as any) as { name: string; monthly_message_limit: number } | null
+
+  const now = new Date()
+  const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString()
+
+  // Upsert credits — resets counter and sets new expiry
+  const { error: creditsError } = await admin.from('ai_user_credits').upsert(
+    {
+      user_id: req.user_id,
+      plan_id: req.plan_id,
+      monthly_message_limit: plan?.monthly_message_limit ?? 300,
+      messages_used: 0,
+      starts_at: now.toISOString(),
+      expires_at: expiresAt,
+      updated_at: now.toISOString(),
+    },
+    { onConflict: 'user_id' }
+  )
+  if (creditsError) throw new Error(creditsError.message)
+
+  const { error } = await admin
+    .from('ai_payment_requests')
+    .update({ status: 'approved', reviewed_at: now.toISOString(), reviewed_by: user.id })
+    .eq('id', requestId)
+  if (error) throw new Error(error.message)
+
+  if (req.user_email && plan) {
+    await sendStudentAiPlanApproved({
+      studentEmail: req.user_email,
+      planName: plan.name,
+      messagesTotal: plan.monthly_message_limit,
+      expiresAt,
+    })
+  }
+
+  redirect('/admin/ai-payments')
+}
+
+export async function rejectAiPaymentRequest(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user || !isAdmin(user.email)) redirect('/dashboard')
+  const admin = createAdminClient()
+
+  const requestId = formData.get('request_id') as string
+  const adminNote = (formData.get('admin_note') as string)?.trim() || null
+
+  const { data: req } = await admin
+    .from('ai_payment_requests')
+    .select('user_email, plan_id, ai_credit_plans(name)')
+    .eq('id', requestId)
+    .maybeSingle()
+
+  const { error } = await admin
+    .from('ai_payment_requests')
+    .update({
+      status: 'rejected',
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: user.id,
+      admin_note: adminNote,
+    })
+    .eq('id', requestId)
+  if (error) throw new Error(error.message)
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const plan = (req?.ai_credit_plans as any) as { name: string } | null
+  if (req?.user_email && plan) {
+    await sendStudentAiPlanRejected({
+      studentEmail: req.user_email,
+      planName: plan.name,
+      adminNote,
+    })
+  }
+
+  redirect('/admin/ai-payments')
 }
 
 // ------------------------------------------------------------------

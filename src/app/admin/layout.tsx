@@ -27,6 +27,9 @@ export default async function AdminLayout({
           <a href="/admin/payments" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
             Payments
           </a>
+          <a href="/admin/ai-payments" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+            AI Plans
+          </a>
           <a
             href="/dashboard"
             className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 ml-auto transition-colors"

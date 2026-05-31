@@ -129,6 +129,42 @@ export type AiTutorMessage = {
   created_at: string
 }
 
+export type AiCreditPlan = {
+  id: string
+  name: string
+  price_amount: number
+  price_currency: string
+  monthly_message_limit: number
+  is_active: boolean
+  created_at: string
+}
+
+export type AiUserCredits = {
+  user_id: string
+  plan_id: string | null
+  monthly_message_limit: number
+  messages_used: number
+  starts_at: string
+  expires_at: string | null
+  updated_at: string
+}
+
+export type AiPaymentRequest = {
+  id: string
+  user_id: string
+  user_email: string
+  plan_id: string
+  proof_image_url: string
+  payer_name: string | null
+  payment_reference: string | null
+  note: string | null
+  admin_note: string | null
+  status: 'pending' | 'approved' | 'rejected'
+  created_at: string
+  reviewed_at: string | null
+  reviewed_by: string | null
+}
+
 export type AiTutorAttachment = {
   id: string
   message_id: string | null

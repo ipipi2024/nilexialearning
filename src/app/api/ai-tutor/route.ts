@@ -5,10 +5,10 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { buildTutorSystemPrompt } from '@/lib/ai/tutorPrompt'
 
-const DAILY_MESSAGE_LIMIT = 50
 const MAX_HISTORY_MESSAGES = 20
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 MB
 const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp']
+const FREE_PLAN_LIMIT = 50
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -56,15 +56,106 @@ export async function POST(request: NextRequest) {
       )
     }
     if (!ALLOWED_IMAGE_TYPES.includes(attachmentFile.type)) {
-      return Response.json(
-        { error: 'Only PNG, JPG, and WebP images are supported.' },
-        { status: 400 }
-      )
+      return Response.json({ error: 'Only PNG, JPG, and WebP images are supported.' }, { status: 400 })
     }
     if (attachmentFile.size > MAX_FILE_SIZE) {
       return Response.json({ error: 'File size must be 5 MB or less.' }, { status: 400 })
     }
   }
+
+  // ─── Credit check ──────────────────────────────────────────────────────────
+  // Use admin client for credit operations (bypasses RLS, enables atomic upsert).
+  const adminClient = createAdminClient()
+  const now = new Date()
+
+  let { data: credits } = await adminClient
+    .from('ai_user_credits')
+    .select('messages_used, monthly_message_limit, expires_at, starts_at')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (!credits) {
+    // Auto-provision Free plan
+    const { data: freePlan } = await adminClient
+      .from('ai_credit_plans')
+      .select('id, monthly_message_limit')
+      .eq('name', 'Free')
+      .maybeSingle()
+
+    await adminClient.from('ai_user_credits').insert({
+      user_id: user.id,
+      plan_id: freePlan?.id ?? null,
+      monthly_message_limit: freePlan?.monthly_message_limit ?? FREE_PLAN_LIMIT,
+      messages_used: 0,
+      starts_at: now.toISOString(),
+    })
+
+    const { data: refetched } = await adminClient
+      .from('ai_user_credits')
+      .select('messages_used, monthly_message_limit, expires_at, starts_at')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    credits = refetched
+  }
+
+  // Handle paid plan expiry → reset to Free
+  if (credits?.expires_at && new Date(credits.expires_at) < now) {
+    const { data: freePlan } = await adminClient
+      .from('ai_credit_plans')
+      .select('id, monthly_message_limit')
+      .eq('name', 'Free')
+      .maybeSingle()
+
+    await adminClient.from('ai_user_credits').update({
+      plan_id: freePlan?.id ?? null,
+      monthly_message_limit: freePlan?.monthly_message_limit ?? FREE_PLAN_LIMIT,
+      messages_used: 0,
+      starts_at: now.toISOString(),
+      expires_at: null,
+      updated_at: now.toISOString(),
+    }).eq('user_id', user.id)
+
+    const { data: refetched } = await adminClient
+      .from('ai_user_credits')
+      .select('messages_used, monthly_message_limit, expires_at, starts_at')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    credits = refetched
+  }
+
+  // Handle Free plan monthly reset (new calendar month)
+  if (credits && !credits.expires_at) {
+    const startsAt = new Date(credits.starts_at)
+    const newMonth = startsAt.getFullYear() !== now.getFullYear() || startsAt.getMonth() !== now.getMonth()
+    if (newMonth) {
+      await adminClient.from('ai_user_credits').update({
+        messages_used: 0,
+        starts_at: now.toISOString(),
+        updated_at: now.toISOString(),
+      }).eq('user_id', user.id)
+
+      const { data: refetched } = await adminClient
+        .from('ai_user_credits')
+        .select('messages_used, monthly_message_limit, expires_at, starts_at')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      credits = refetched
+    }
+  }
+
+  const messagesUsed = credits?.messages_used ?? 0
+  const monthlyLimit = credits?.monthly_message_limit ?? FREE_PLAN_LIMIT
+
+  if (messagesUsed >= monthlyLimit) {
+    return Response.json(
+      {
+        error: 'You have used all your AI Tutor credits for this period. Upgrade your AI plan to continue.',
+        upgradeRequired: true,
+      },
+      { status: 429 }
+    )
+  }
+  // ─── End credit check ──────────────────────────────────────────────────────
 
   // Load question with exam and choices — RLS ensures exam is published
   const { data: questionData } = await supabase
@@ -105,27 +196,6 @@ export async function POST(request: NextRequest) {
     if (!access) {
       return Response.json({ error: 'Access denied' }, { status: 403 })
     }
-  }
-
-  // Daily usage limit — count user messages sent today
-  const todayStart = new Date()
-  todayStart.setUTCHours(0, 0, 0, 0)
-
-  const { count: todayCount } = await supabase
-    .from('ai_tutor_messages')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-    .eq('role', 'user')
-    .gte('created_at', todayStart.toISOString())
-
-  if ((todayCount ?? 0) >= DAILY_MESSAGE_LIMIT) {
-    return Response.json(
-      {
-        error:
-          "You have reached today's AI tutor limit. Please continue practicing and try again tomorrow.",
-      },
-      { status: 429 }
-    )
   }
 
   // Load student's current answer for this question if attemptId provided
@@ -171,7 +241,6 @@ export async function POST(request: NextRequest) {
     const sanitizedName = attachmentFile.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 100)
     const filePath = `${user.id}/${questionId}/${Date.now()}-${sanitizedName}`
 
-    const adminClient = createAdminClient()
     const { error: uploadError } = await adminClient.storage
       .from('ai-tutor-attachments')
       .upload(filePath, buffer, { contentType: attachmentFile.type })
@@ -247,17 +316,8 @@ export async function POST(request: NextRequest) {
     ? {
         role: 'user',
         content: [
-          {
-            type: 'text',
-            text: trimmedMessage || "I've attached an image to help explain my question.",
-          },
-          {
-            type: 'image_url',
-            image_url: {
-              url: `data:${imageType};base64,${imageBase64}`,
-              detail: 'high',
-            },
-          },
+          { type: 'text', text: trimmedMessage || "I've attached an image to help explain my question." },
+          { type: 'image_url', image_url: { url: `data:${imageType};base64,${imageBase64}`, detail: 'high' } },
         ],
       }
     : { role: 'user', content: trimmedMessage }
@@ -269,10 +329,7 @@ export async function POST(request: NextRequest) {
     model: 'gpt-4o-mini',
     messages: [
       { role: 'system', content: systemPrompt },
-      ...history.map((m) => ({
-        role: m.role as 'user' | 'assistant',
-        content: m.content,
-      })),
+      ...history.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
       currentUserMessage,
     ],
     max_tokens: 600,
@@ -293,5 +350,10 @@ export async function POST(request: NextRequest) {
     content: assistantContent,
   })
 
-  return Response.json({ message: assistantContent, attachmentUrl })
+  // Atomically increment message count now that we have a successful response
+  await supabase.rpc('increment_ai_messages_used', { p_user_id: user.id })
+
+  const creditsRemaining = Math.max(0, monthlyLimit - messagesUsed - 1)
+
+  return Response.json({ message: assistantContent, attachmentUrl, creditsRemaining, creditsTotal: monthlyLimit })
 }

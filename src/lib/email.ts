@@ -146,6 +146,109 @@ export async function sendStudentPaymentApproved({
   await sendEmail({ to: studentEmail, subject: 'Access approved — CQORIA', html, text })
 }
 
+// ── AI Tutor email helpers ────────────────────────────────────────────────────
+
+export async function sendAdminAiPaymentNotification({
+  studentEmail,
+  planName,
+  planPrice,
+  currency,
+  payerName,
+  paymentReference,
+  note,
+}: {
+  studentEmail: string
+  planName: string
+  planPrice: number
+  currency: string
+  payerName: string | null
+  paymentReference: string | null
+  note: string | null
+}) {
+  const adminEmail = process.env.ADMIN_PAYMENT_EMAIL
+  if (!adminEmail) return
+
+  const dashboardUrl = APP_URL ? `${APP_URL}/admin/ai-payments` : null
+  const rows = [
+    ['Student', studentEmail],
+    ['Plan', `${planName} — ${currency} ${Number(planPrice).toFixed(2)}/month`],
+    ...(payerName ? [['Payer Name', payerName]] : []),
+    ...(paymentReference ? [['Reference', paymentReference]] : []),
+    ...(note ? [['Note', note]] : []),
+  ]
+  const tableRows = rows
+    .map(([l, v]) => `<tr><td style="padding:8px 0;color:#666;width:140px;vertical-align:top;">${l}</td><td style="padding:8px 0;">${v}</td></tr>`)
+    .join('')
+
+  const html = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#111;padding:24px;">
+  <h2 style="font-size:18px;margin:0 0 20px;">New AI Plan Payment Submitted</h2>
+  <table style="width:100%;border-collapse:collapse;font-size:14px;">${tableRows}</table>
+  ${dashboardUrl ? `<p style="font-size:14px;margin-top:20px;"><a href="${dashboardUrl}">Review in admin →</a></p>` : ''}
+</div>`
+  const text = `New AI Plan Payment\n\n${rows.map(([l, v]) => `${l}: ${v}`).join('\n')}`
+  await sendEmail({ to: adminEmail, subject: 'New AI plan payment submitted — CQORIA', html, text })
+}
+
+export async function sendStudentAiPaymentReceived({
+  studentEmail,
+  planName,
+}: {
+  studentEmail: string
+  planName: string
+}) {
+  const html = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#111;padding:24px;">
+  <h2 style="font-size:18px;margin:0 0 12px;">AI Plan Payment Received</h2>
+  <p style="font-size:14px;color:#555;margin:0 0 16px;">Thank you for submitting your payment proof.</p>
+  <p style="font-size:14px;margin:0 0 6px;"><strong>Plan:</strong> ${planName}</p>
+  <p style="font-size:14px;color:#555;">You will receive another email once your payment is reviewed.</p>
+</div>`
+  const text = `AI Plan Payment Received\n\nPlan: ${planName}\nStatus: Pending review\n\nYou will be notified once reviewed.`
+  await sendEmail({ to: studentEmail, subject: 'AI plan payment received — CQORIA', html, text })
+}
+
+export async function sendStudentAiPlanApproved({
+  studentEmail,
+  planName,
+  messagesTotal,
+  expiresAt,
+}: {
+  studentEmail: string
+  planName: string
+  messagesTotal: number
+  expiresAt: string
+}) {
+  const upgradeUrl = APP_URL ? `${APP_URL}/ai/upgrade` : null
+  const expiry = new Date(expiresAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
+  const html = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#111;padding:24px;">
+  <h2 style="font-size:18px;margin:0 0 12px;color:#16a34a;">AI Tutor Plan Activated</h2>
+  <p style="font-size:14px;margin:0 0 8px;">Your payment has been approved. Your AI Tutor plan is now active:</p>
+  <p style="font-size:14px;font-weight:bold;margin:0 0 6px;">${planName} — ${messagesTotal} AI messages</p>
+  <p style="font-size:14px;color:#555;margin:0 0 16px;">Valid until ${expiry}.</p>
+  ${upgradeUrl ? `<p style="font-size:14px;"><a href="${upgradeUrl}">View your plan →</a></p>` : ''}
+</div>`
+  const text = `AI Tutor Plan Activated\n\n${planName} — ${messagesTotal} messages\nValid until ${expiry}`
+  await sendEmail({ to: studentEmail, subject: 'AI Tutor plan activated — CQORIA', html, text })
+}
+
+export async function sendStudentAiPlanRejected({
+  studentEmail,
+  planName,
+  adminNote,
+}: {
+  studentEmail: string
+  planName: string
+  adminNote: string | null
+}) {
+  const html = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#111;padding:24px;">
+  <h2 style="font-size:18px;margin:0 0 12px;color:#dc2626;">AI Plan Payment Rejected</h2>
+  <p style="font-size:14px;margin:0 0 8px;">Unfortunately your payment for <strong>${planName}</strong> could not be approved.</p>
+  ${adminNote ? `<p style="font-size:14px;margin:0 0 16px;"><strong>Reason:</strong> ${adminNote}</p>` : ''}
+  <p style="font-size:14px;color:#555;">Please resubmit your payment proof or contact support.</p>
+</div>`
+  const text = `AI Plan Payment Rejected\n\nPlan: ${planName}${adminNote ? `\nReason: ${adminNote}` : ''}\n\nPlease resubmit or contact support.`
+  await sendEmail({ to: studentEmail, subject: 'AI plan payment rejected — CQORIA', html, text })
+}
+
 // ── Email 4: Student notified of rejection ────────────────────────────────────
 
 export async function sendStudentPaymentRejected({

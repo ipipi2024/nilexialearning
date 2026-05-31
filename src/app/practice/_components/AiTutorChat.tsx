@@ -78,6 +78,10 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
   const [isLoading, setIsLoading] = useState(false)
   const [historyLoaded, setHistoryLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [upgradeRequired, setUpgradeRequired] = useState(false)
+
+  // Credits
+  const [credits, setCredits] = useState<{ used: number; limit: number } | null>(null)
 
   // Voice
   const [isListening, setIsListening] = useState(false)
@@ -116,7 +120,7 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
     async function loadHistory() {
       const supabase = createClient()
 
-      const [{ data: msgs }, { data: attachments }] = await Promise.all([
+      const [{ data: msgs }, { data: attachments }, { data: creditsRow }] = await Promise.all([
         supabase
           .from('ai_tutor_messages')
           .select('id, role, content')
@@ -128,7 +132,15 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
           .from('ai_tutor_attachments')
           .select('message_id, file_url, file_name, file_type')
           .eq('question_id', questionId),
+        supabase
+          .from('ai_user_credits')
+          .select('messages_used, monthly_message_limit')
+          .maybeSingle(),
       ])
+
+      if (creditsRow) {
+        setCredits({ used: creditsRow.messages_used, limit: creditsRow.monthly_message_limit })
+      }
 
       const attachMap = new Map(
         (attachments ?? []).map((a) => [
@@ -264,6 +276,7 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
 
     setInput('')
     setError(null)
+    setUpgradeRequired(false)
     setVoiceError(null)
     setAttachmentError(null)
     setPendingFile(null)
@@ -286,10 +299,15 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
 
       if (!res.ok) {
         setError(data.error ?? 'Something went wrong. Please try again.')
+        if (data.upgradeRequired) setUpgradeRequired(true)
         return
       }
 
       setMessages((prev) => [...prev, { role: 'assistant', content: data.message }])
+      // Update credit counter from API response
+      if (typeof data.creditsRemaining === 'number' && typeof data.creditsTotal === 'number') {
+        setCredits({ used: data.creditsTotal - data.creditsRemaining, limit: data.creditsTotal })
+      }
     } catch {
       setError('Could not reach the AI tutor. Please check your connection.')
     } finally {
@@ -347,10 +365,22 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
         {/* Header */}
         <div className="border-b border-gray-200 dark:border-gray-700 shrink-0">
           <div className="max-w-3xl mx-auto w-full flex items-center justify-between px-4 py-3">
-            <div className="flex items-center gap-2">
-              <span className="text-purple-600 dark:text-purple-400">✦</span>
-              <span className="font-semibold text-gray-800 dark:text-gray-100 text-sm">AI Tutor</span>
-              <span className="text-xs text-gray-400 dark:text-gray-500 font-normal">— step by step</span>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-purple-600 dark:text-purple-400 shrink-0">✦</span>
+              <span className="font-semibold text-gray-800 dark:text-gray-100 text-sm shrink-0">AI Tutor</span>
+              {credits ? (
+                <span className={`text-xs font-medium shrink-0 ${
+                  credits.limit - credits.used <= 0
+                    ? 'text-red-500 dark:text-red-400'
+                    : credits.limit - credits.used < credits.limit * 0.15
+                    ? 'text-amber-500 dark:text-amber-400'
+                    : 'text-gray-400 dark:text-gray-500'
+                }`}>
+                  {Math.max(0, credits.limit - credits.used)}/{credits.limit} msgs
+                </span>
+              ) : (
+                <span className="text-xs text-gray-400 dark:text-gray-500 font-normal shrink-0">— step by step</span>
+              )}
             </div>
             <button
               onClick={() => setIsOpen(false)}
@@ -438,8 +468,16 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
           )}
 
           {error && (
-            <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm rounded-xl px-4 py-3">
-              {error}
+            <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm rounded-xl px-4 py-3 space-y-2">
+              <p>{error}</p>
+              {upgradeRequired && (
+                <a
+                  href="/ai/upgrade"
+                  className="inline-block text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  Upgrade AI Plan →
+                </a>
+              )}
             </div>
           )}
 
