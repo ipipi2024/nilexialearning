@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { isAdmin } from '@/lib/admin'
+import { sendStudentPaymentApproved, sendStudentPaymentRejected } from '@/lib/email'
 
 // Gate every admin action — returns the admin client on success.
 async function requireAdmin() {
@@ -503,6 +504,12 @@ export async function approvePaymentRequest(formData: FormData) {
   const userId = formData.get('user_id') as string
   const examId = formData.get('exam_id') as string
 
+  // Fetch email data in parallel with the access grant.
+  const [{ data: paymentReq }, { data: exam }] = await Promise.all([
+    admin.from('payment_requests').select('user_email').eq('id', requestId).maybeSingle(),
+    admin.from('exams').select('subject, year, paper_number').eq('id', examId).maybeSingle(),
+  ])
+
   // Grant access — upsert is a no-op if access already exists
   const { error: accessError } = await admin.from('user_exam_access').upsert(
     { user_id: userId, exam_id: examId, granted_by: user.id, source: 'manual_payment' },
@@ -515,6 +522,11 @@ export async function approvePaymentRequest(formData: FormData) {
     .update({ status: 'approved', reviewed_at: new Date().toISOString(), reviewed_by: user.id })
     .eq('id', requestId)
   if (error) throw new Error(error.message)
+
+  // Send approval email best-effort — never block the approval flow.
+  if (paymentReq?.user_email && exam) {
+    await sendStudentPaymentApproved({ studentEmail: paymentReq.user_email, exam })
+  }
 
   redirect('/admin/payments')
 }
@@ -530,6 +542,13 @@ export async function rejectPaymentRequest(formData: FormData) {
   const requestId = formData.get('request_id') as string
   const adminNote = (formData.get('admin_note') as string)?.trim() || null
 
+  // Fetch email data before the update (user_email + exam details via join).
+  const { data: paymentReq } = await admin
+    .from('payment_requests')
+    .select('user_email, exam_id, exams(subject, year, paper_number)')
+    .eq('id', requestId)
+    .maybeSingle()
+
   const { error } = await admin
     .from('payment_requests')
     .update({
@@ -540,6 +559,13 @@ export async function rejectPaymentRequest(formData: FormData) {
     })
     .eq('id', requestId)
   if (error) throw new Error(error.message)
+
+  // Send rejection email best-effort — never block the rejection flow.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const exam = (paymentReq as any)?.exams as { subject: string; year: number; paper_number: number } | null
+  if (paymentReq?.user_email && exam) {
+    await sendStudentPaymentRejected({ studentEmail: paymentReq.user_email, exam, adminNote })
+  }
 
   redirect('/admin/payments')
 }

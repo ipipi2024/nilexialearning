@@ -3,6 +3,10 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import {
+  sendAdminPaymentNotification,
+  sendStudentPaymentReceived,
+} from '@/lib/email'
 
 async function requireUser() {
   const supabase = await createClient()
@@ -60,7 +64,7 @@ export async function submitPaymentRequest(formData: FormData) {
   // Confirm exam exists, is published, and is paid (RLS filters published).
   const { data: exam } = await supabase
     .from('exams')
-    .select('id, access_type')
+    .select('id, access_type, subject, year, paper_number')
     .eq('id', examId)
     .maybeSingle()
 
@@ -129,7 +133,33 @@ export async function submitPaymentRequest(formData: FormData) {
 
   if (insertError) throw new Error(insertError.message)
 
-  redirect('/practice')
+  // Send emails best-effort — never block the payment flow.
+  const payerName = (formData.get('payer_name') as string)?.trim() || null
+  const paymentReference = (formData.get('payment_reference') as string)?.trim() || null
+  const note = (formData.get('note') as string)?.trim() || null
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  await Promise.allSettled([
+    sendAdminPaymentNotification({
+      studentEmail: user.email ?? '',
+      studentName: profile?.full_name ?? null,
+      exam,
+      payerName,
+      paymentReference,
+      note,
+    }),
+    sendStudentPaymentReceived({
+      studentEmail: user.email ?? '',
+      exam,
+    }),
+  ])
+
+  redirect(`/practice/${examId}/payment`)
 }
 
 export async function saveAnswer(
