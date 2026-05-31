@@ -3,6 +3,7 @@ import { createExplanationBlock } from '@/app/admin/actions'
 import { ExplanationBlockForm } from '@/app/admin/_components/ExplanationBlockForm'
 import { AdminQuestionNav } from '@/app/admin/_components/AdminQuestionNav'
 import { DeleteQuestionButton } from '@/app/admin/_components/DeleteQuestionButton'
+import { getYouTubeEmbedUrl } from '@/lib/youtube'
 import type { Choice, ExplanationBlock } from '@/types/database'
 
 type Props = {
@@ -105,6 +106,29 @@ export default async function QuestionPage({ params }: Props) {
             className="max-w-full h-auto rounded-lg border border-gray-200 mt-2"
           />
         )}
+        {question.tutorial_video_url && (() => {
+          const embedUrl = getYouTubeEmbedUrl(question.tutorial_video_url)
+          return (
+            <div className="mt-3 space-y-2">
+              <p className="text-xs font-medium text-gray-500">
+                Tutorial Video:{' '}
+                <span className="font-normal text-gray-400 break-all">
+                  {question.tutorial_video_url}
+                </span>
+              </p>
+              {embedUrl && (
+                <div className="aspect-video w-full max-w-sm overflow-hidden rounded-lg bg-black">
+                  <iframe
+                    src={embedUrl}
+                    className="h-full w-full"
+                    allowFullScreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  />
+                </div>
+              )}
+            </div>
+          )
+        })()}
       </div>
 
       {/* Choices (multiple choice only) */}

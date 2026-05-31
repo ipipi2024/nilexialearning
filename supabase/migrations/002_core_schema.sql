@@ -60,15 +60,16 @@ create table public.sections (
 -- 4. questions
 --    A single question. Belongs to both an exam and a section.
 create table public.questions (
-  id                 uuid          primary key default gen_random_uuid(),
-  exam_id            uuid          not null references public.exams(id)    on delete cascade,
-  section_id         uuid          not null references public.sections(id) on delete cascade,
-  number             int           not null,
-  question_text      text          not null,
-  question_type      question_type not null,
-  question_image_url text,
-  marks              int           not null,
-  created_at         timestamptz   default now() not null
+  id                  uuid          primary key default gen_random_uuid(),
+  exam_id             uuid          not null references public.exams(id)    on delete cascade,
+  section_id          uuid          not null references public.sections(id) on delete cascade,
+  number              int           not null,
+  question_text       text          not null,
+  question_type       question_type not null,
+  question_image_url  text,
+  tutorial_video_url  text,
+  marks               int           not null,
+  created_at          timestamptz   default now() not null
 );
 
 -- 5. choices

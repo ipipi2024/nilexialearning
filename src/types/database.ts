@@ -41,6 +41,7 @@ export type Question = {
   question_text: string
   question_type: QuestionType
   question_image_url: string | null
+  tutorial_video_url: string | null
   marks: number
   created_at: string
 }

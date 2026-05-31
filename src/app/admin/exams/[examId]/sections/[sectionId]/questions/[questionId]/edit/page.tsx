@@ -55,6 +55,7 @@ export default async function EditQuestionPage({ params }: Props) {
             question_type: question.question_type,
             marks: question.marks,
             question_image_url: question.question_image_url,
+            tutorial_video_url: question.tutorial_video_url,
             choices: choices ?? [],
           }}
           action={action}

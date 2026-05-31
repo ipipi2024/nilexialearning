@@ -10,6 +10,7 @@ type DefaultValues = {
   question_type: QuestionType
   marks: number
   question_image_url: string | null
+  tutorial_video_url: string | null
   choices: Pick<Choice, 'label' | 'text' | 'is_correct' | 'choice_image_url'>[]
 }
 
@@ -138,6 +139,21 @@ export function QuestionForm({
         label="Question Image"
         existingImageUrl={defaultValues?.question_image_url}
       />
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="tutorial_video_url">
+          Tutorial Video URL{' '}
+          <span className="font-normal text-gray-400">(optional)</span>
+        </label>
+        <input
+          id="tutorial_video_url"
+          name="tutorial_video_url"
+          type="text"
+          placeholder="https://www.youtube.com/watch?v=VIDEO_ID"
+          defaultValue={defaultValues?.tutorial_video_url ?? ''}
+          className={inputClass}
+        />
+      </div>
 
       {/* Choices — only shown for multiple choice */}
       {questionType === 'multiple_choice' && (

@@ -126,6 +126,8 @@ export async function createQuestion(formData: FormData) {
     imageUrl = await uploadToStorage(admin, 'question-images', imageFile)
   }
 
+  const rawVideoUrl = (formData.get('tutorial_video_url') as string | null)?.trim() || null
+
   const { data: question, error } = await admin
     .from('questions')
     .insert({
@@ -135,6 +137,7 @@ export async function createQuestion(formData: FormData) {
       question_text: formData.get('question_text') as string,
       question_type: questionType,
       question_image_url: imageUrl,
+      tutorial_video_url: rawVideoUrl,
       marks: parseInt(formData.get('marks') as string),
     })
     .select('id')
@@ -238,6 +241,8 @@ export async function updateQuestion(questionId: string, formData: FormData) {
     imageUrl = await uploadToStorage(admin, 'question-images', imageFile)
   }
 
+  const rawVideoUrl = (formData.get('tutorial_video_url') as string | null)?.trim() || null
+
   const { error } = await admin
     .from('questions')
     .update({
@@ -245,6 +250,7 @@ export async function updateQuestion(questionId: string, formData: FormData) {
       question_text: formData.get('question_text') as string,
       question_type: questionType,
       question_image_url: imageUrl,
+      tutorial_video_url: rawVideoUrl,
       marks: parseInt(formData.get('marks') as string),
     })
     .eq('id', questionId)

@@ -7,6 +7,7 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { ExplanationRenderer } from './ExplanationRenderer'
 import { ZoomableImage } from './ZoomableImage'
+import { getYouTubeEmbedUrl } from '@/lib/youtube'
 import { saveAnswer, saveSelfCheck } from '@/app/practice/actions'
 import type { Choice, ExplanationBlock, Question, UserAnswer } from '@/types/database'
 
@@ -304,6 +305,25 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
             )}
           </div>
         )}
+
+        {/* Video tutorial — shown after explanation is revealed */}
+        {isRevealed && question.tutorial_video_url && (() => {
+          const embedUrl = getYouTubeEmbedUrl(question.tutorial_video_url)
+          if (!embedUrl) return null
+          return (
+            <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-3">
+              <p className="text-sm font-semibold text-gray-700">Video Tutorial</p>
+              <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
+                <iframe
+                  src={embedUrl}
+                  className="h-full w-full"
+                  allowFullScreen
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                />
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Navigation */}
         <div className="pt-2 space-y-3">
