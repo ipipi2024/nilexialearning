@@ -39,12 +39,12 @@ export default async function EditQuestionPage({ params }: Props) {
           previousQuestion={previousQuestion}
           nextQuestion={nextQuestion}
         />
-        <h1 className="text-xl font-bold text-gray-900">
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">
           Edit Question {question.number}
         </h1>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6 max-w-lg">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 max-w-lg">
         <QuestionForm
           examId={examId}
           sectionId={sectionId}

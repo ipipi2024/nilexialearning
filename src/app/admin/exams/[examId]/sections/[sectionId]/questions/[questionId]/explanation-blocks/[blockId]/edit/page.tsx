@@ -32,16 +32,16 @@ export default async function EditExplanationBlockPage({ params }: Props) {
       <div className="mb-6">
         <a
           href={`/admin/exams/${examId}/sections/${sectionId}/questions/${questionId}`}
-          className="text-sm text-gray-500 hover:text-gray-700"
+          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
         >
           ← Question
         </a>
-        <h1 className="text-xl font-bold text-gray-900 mt-2">
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white mt-2">
           Edit Explanation Block #{block.block_order}
         </h1>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6 max-w-lg">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 max-w-lg">
         <ExplanationBlockForm
           questionId={questionId}
           examId={examId}
