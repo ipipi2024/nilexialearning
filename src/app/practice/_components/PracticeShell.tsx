@@ -7,6 +7,7 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { ExplanationRenderer } from './ExplanationRenderer'
 import { ZoomableImage } from './ZoomableImage'
+import { AiTutorChat } from './AiTutorChat'
 import { getYouTubeEmbedUrl } from '@/lib/youtube'
 import { saveAnswer, saveSelfCheck } from '@/app/practice/actions'
 import type { Choice, ExplanationBlock, Question, UserAnswer } from '@/types/database'
@@ -383,6 +384,13 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
             </div>
           </div>
         </div>
+
+        {/* AI Tutor — keyed on questionId so chat resets when navigating */}
+        <AiTutorChat
+          key={question.id}
+          questionId={question.id}
+          attemptId={attemptId}
+        />
 
         {isPending && (
           <p className="text-center text-xs text-gray-400 dark:text-gray-500">Saving…</p>

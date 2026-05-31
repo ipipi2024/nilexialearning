@@ -118,3 +118,13 @@ export type UserAnswer = {
   self_check_status: SelfCheckStatus | null
   created_at: string
 }
+
+export type AiTutorMessage = {
+  id: string
+  user_id: string
+  question_id: string
+  attempt_id: string | null
+  role: 'user' | 'assistant'
+  content: string
+  created_at: string
+}
