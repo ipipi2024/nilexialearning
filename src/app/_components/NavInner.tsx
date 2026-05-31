@@ -25,7 +25,7 @@ export function NavInner({ isSignedIn }: Props) {
         <div className="flex items-center justify-between h-14">
           {/* Brand */}
           <a href="/" className="font-bold text-gray-900 text-lg tracking-tight">
-            Nilexia
+            CQORIA
           </a>
 
           {/* Desktop links */}
