@@ -221,7 +221,7 @@ export function FunctionGraph({ spec }: { spec: GraphSpec }) {
           return (
             <g key={`xt${t}`}>
               <line x1={sx} y1={xAxisY - 3} x2={sx} y2={xAxisY + 3} stroke="#9ca3af" strokeWidth="1" />
-              <text x={sx} y={xAxisY + 14} textAnchor="middle" fontSize="9" fill="#6b7280">
+              <text x={sx} y={xAxisY + 14} textAnchor="middle" fontSize="11" fill="#6b7280">
                 {fmt(t)}
               </text>
             </g>
@@ -234,7 +234,7 @@ export function FunctionGraph({ spec }: { spec: GraphSpec }) {
           return (
             <g key={`yt${t}`}>
               <line x1={yAxisX - 3} y1={sy} x2={yAxisX + 3} y2={sy} stroke="#9ca3af" strokeWidth="1" />
-              <text x={yAxisX - 6} y={sy + 3.5} textAnchor="end" fontSize="9" fill="#6b7280">
+              <text x={yAxisX - 6} y={sy + 3.5} textAnchor="end" fontSize="11" fill="#6b7280">
                 {fmt(t)}
               </text>
             </g>
@@ -243,14 +243,14 @@ export function FunctionGraph({ spec }: { spec: GraphSpec }) {
 
         {/* Optional axis labels */}
         {spec.xLabel && (
-          <text x={ML + PW / 2} y={H - 6} textAnchor="middle" fontSize="10" fill="#374151">
+          <text x={ML + PW / 2} y={H - 6} textAnchor="middle" fontSize="12" fill="#374151">
             {spec.xLabel}
           </text>
         )}
         {spec.yLabel && (
           <text
             x={10} y={MT + PH / 2}
-            textAnchor="middle" fontSize="10" fill="#374151"
+            textAnchor="middle" fontSize="12" fill="#374151"
             transform={`rotate(-90, 10, ${MT + PH / 2})`}
           >
             {spec.yLabel}
@@ -289,7 +289,7 @@ export function FunctionGraph({ spec }: { spec: GraphSpec }) {
               key={`ptl${i}`}
               x={flipX ? cx - 7 : cx + 8} y={cy - 6}
               textAnchor={flipX ? 'end' : 'start'}
-              fontSize="9" fill={COLORS[0]} fontWeight="500"
+              fontSize="10" fill={COLORS[0]} fontWeight="500"
             >
               {pt.label}
             </text>

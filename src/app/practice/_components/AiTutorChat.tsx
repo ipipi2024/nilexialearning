@@ -47,6 +47,54 @@ function GraphBlock({ code }: { code: string }) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Graph content normalizer
+// Catches the case where the AI outputs a bare JSON graph spec (no fenced block).
+// If the message has no code fences but contains a top-level JSON object with
+// graph-indicator fields, it wraps that object in a ```graph fence automatically.
+// ---------------------------------------------------------------------------
+
+const GRAPH_FIELD_RE = /"(?:xMin|xMax|yMin|yMax|functions|points)"\s*:/
+
+function normalizeGraphContent(content: string): string {
+  // Already has a graph fence or some other code fence — don't touch it
+  if (content.includes('```')) return content
+  // No graph-like fields at all — fast exit
+  if (!GRAPH_FIELD_RE.test(content)) return content
+
+  // Walk the string looking for the first top-level balanced JSON object
+  let depth = 0
+  let start = -1
+  for (let i = 0; i < content.length; i++) {
+    const ch = content[i]
+    if (ch === '{') {
+      if (depth === 0) start = i
+      depth++
+    } else if (ch === '}' && depth > 0) {
+      depth--
+      if (depth === 0 && start !== -1) {
+        const candidate = content.slice(start, i + 1)
+        if (GRAPH_FIELD_RE.test(candidate)) {
+          try {
+            JSON.parse(candidate)
+            const before = content.slice(0, start).trimEnd()
+            const after = content.slice(i + 1).trimStart()
+            return (
+              (before ? before + '\n\n' : '') +
+              '```graph\n' + candidate + '\n```' +
+              (after ? '\n\n' + after : '')
+            )
+          } catch {
+            // Not valid JSON — leave as-is
+          }
+        }
+        start = -1
+      }
+    }
+  }
+  return content
+}
+
 // Custom ReactMarkdown component map — intercepts mermaid, svg, and graph code blocks
 const MD_COMPONENTS = {
   code({ className, children }: React.HTMLAttributes<HTMLElement>) {
@@ -472,10 +520,22 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
             <p className="text-sm text-gray-400 dark:text-gray-500 text-center">Loading…</p>
           )}
 
-          {messages.map((msg, i) => (
+          {messages.map((msg, i) => {
+            // Pre-process assistant content: normalise LaTeX delimiters, then
+            // wrap any bare graph JSON in a ```graph fence if needed.
+            const processedContent =
+              msg.role === 'assistant'
+                ? normalizeGraphContent(normalizeLatex(msg.content))
+                : msg.content
+
+            // Widen the bubble to full-width so graphs have room to render on mobile
+            const hasGraph =
+              msg.role === 'assistant' && processedContent.includes('```graph')
+
+            return (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${
+                className={`${hasGraph ? 'w-full' : 'max-w-[85%]'} rounded-2xl px-4 py-2.5 text-sm ${
                   msg.role === 'user'
                     ? 'bg-blue-600 text-white rounded-br-sm'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-sm'
@@ -488,7 +548,7 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
                       rehypePlugins={[rehypeKatex]}
                       components={MD_COMPONENTS}
                     >
-                      {normalizeLatex(msg.content)}
+                      {processedContent}
                     </ReactMarkdown>
                   </div>
                 ) : (
@@ -514,7 +574,8 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
                 )}
               </div>
             </div>
-          ))}
+            )
+          })}
 
           {isLoading && (
             <div className="flex justify-start">

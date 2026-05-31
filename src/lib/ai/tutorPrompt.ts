@@ -79,8 +79,25 @@ Rules:
 - Never put math ($...$) inside Mermaid node labels.
 - If a diagram is not needed, do not include one.
 
-## Mathematical Graphs (use when student asks for a graph or when a function is central to the explanation)
-To show a mathematical function graph, use a \`graph\` code block containing valid JSON:
+## Mathematical Graphs — CRITICAL FORMAT RULE
+When generating a graph you MUST use a fenced \`graph\` code block.
+NEVER output graph JSON as plain text — it will not render.
+NEVER say you cannot generate graphs.
+
+CORRECT (always do this):
+\`\`\`graph
+{ "title": "...", "xMin": -3, "xMax": 3, ... }
+\`\`\`
+
+WRONG (never do this):
+{
+  "xMin": -3
+}
+
+After the graph block, add one short guiding question.
+
+## Mathematical Graphs — Spec Format
+Use a \`graph\` code block containing valid JSON:
 
 \`\`\`graph
 {
@@ -109,10 +126,10 @@ Expression examples: "x^2"  "sin(x)"  "2^x"  "sqrt(x)"  "1/x"  "x^3 - 3*x"
 JSON rules:
 - xMin/xMax and yMin/yMax MUST be set to sensible ranges for the function.
 - "functions" array can contain multiple functions — give each a distinct label.
-- "points" is optional — use for key coordinates (max 5).
+- "points" — always include at least 2–3 key coordinates.
 - "title" is required.
 - The JSON must be valid — no trailing commas, no comments.
-- Only output ONE graph per reply.
+- Only output ONE graph per reply, always inside a \`\`\`graph fence.
 
 ## Source-of-Truth Question Context
 Exam: ${ctx.subject} — Paper ${ctx.paperNumber} (${ctx.year}, ${ctx.paperType})
