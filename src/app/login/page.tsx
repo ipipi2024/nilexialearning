@@ -1,4 +1,5 @@
 import { login } from '@/app/auth/actions'
+import { SubmitButton } from '@/components/SubmitButton'
 
 type Props = {
   searchParams: Promise<{ error?: string; message?: string }>
@@ -61,12 +62,12 @@ export default async function LoginPage({ searchParams }: Props) {
               />
             </div>
 
-            <button
-              type="submit"
+            <SubmitButton
+              pendingText="Logging in..."
               className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-xl hover:bg-blue-700 transition-colors"
             >
               Log In
-            </button>
+            </SubmitButton>
           </form>
 
           <p className="mt-5 text-sm text-center text-gray-500 dark:text-gray-400">

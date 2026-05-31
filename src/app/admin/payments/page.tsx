@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { approvePaymentRequest, rejectPaymentRequest } from '@/app/admin/actions'
+import { SubmitButton } from '@/components/SubmitButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -165,12 +166,12 @@ export default async function PaymentsPage({ searchParams }: Props) {
                       <input type="hidden" name="request_id" value={req.id} />
                       <input type="hidden" name="user_id" value={req.user_id} />
                       <input type="hidden" name="exam_id" value={req.exam_id} />
-                      <button
-                        type="submit"
+                      <SubmitButton
+                        pendingText="Approving..."
                         className="bg-green-600 text-white text-sm font-semibold px-5 py-2 rounded-xl hover:bg-green-700 transition-colors"
                       >
                         Approve Access
-                      </button>
+                      </SubmitButton>
                     </form>
                     <form action={rejectPaymentRequest} className="flex flex-1 gap-2 items-center">
                       <input type="hidden" name="request_id" value={req.id} />
@@ -180,12 +181,12 @@ export default async function PaymentsPage({ searchParams }: Props) {
                         placeholder="Rejection reason (optional)"
                         className="flex-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-400"
                       />
-                      <button
-                        type="submit"
+                      <SubmitButton
+                        pendingText="Rejecting..."
                         className="bg-red-500 dark:bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-red-600 dark:hover:bg-red-700 transition-colors whitespace-nowrap"
                       >
                         Reject
-                      </button>
+                      </SubmitButton>
                     </form>
                   </div>
                 )}

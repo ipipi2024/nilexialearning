@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { submitPaymentRequest } from '@/app/practice/actions'
 import { PaymentDetails } from '@/components/PaymentDetails'
+import { SubmitButton } from '@/components/SubmitButton'
 
 type Props = {
   params: Promise<{ attemptId: string }>
@@ -176,12 +177,12 @@ export default async function PaymentPage({ params, searchParams }: Props) {
                   />
                 </div>
 
-                <button
-                  type="submit"
+                <SubmitButton
+                  pendingText="Uploading proof..."
                   className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-xl hover:bg-blue-700 transition-colors"
                 >
                   Submit Payment Proof
-                </button>
+                </SubmitButton>
               </form>
             </div>
           </>

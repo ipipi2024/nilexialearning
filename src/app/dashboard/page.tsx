@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { logout } from '@/app/auth/actions'
+import { SubmitButton } from '@/components/SubmitButton'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -21,12 +22,12 @@ export default async function DashboardPage() {
             CQORIA
           </a>
           <form action={logout}>
-            <button
-              type="submit"
+            <SubmitButton
+              pendingText="Logging out..."
               className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               Logout
-            </button>
+            </SubmitButton>
           </form>
         </div>
       </header>

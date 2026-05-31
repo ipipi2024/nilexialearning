@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { Choice, QuestionType } from '@/types/database'
 import { ImageInput } from './ImageInput'
+import { SubmitButton } from '@/components/SubmitButton'
 
 type DefaultValues = {
   number: number
@@ -195,12 +196,12 @@ export function QuestionForm({
         </div>
       )}
 
-      <button
-        type="submit"
+      <SubmitButton
+        pendingText={mode === 'edit' ? 'Saving changes...' : 'Saving question...'}
         className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-xl hover:bg-blue-700 transition-colors"
       >
         {mode === 'edit' ? 'Save Changes' : 'Save Question'}
-      </button>
+      </SubmitButton>
     </form>
   )
 }

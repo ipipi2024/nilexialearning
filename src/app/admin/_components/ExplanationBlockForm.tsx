@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { BlockType } from '@/types/database'
 import { ImageInput } from './ImageInput'
+import { SubmitButton } from '@/components/SubmitButton'
 
 type DefaultValues = {
   block_order: number
@@ -101,12 +102,12 @@ export function ExplanationBlockForm({
         />
       )}
 
-      <button
-        type="submit"
+      <SubmitButton
+        pendingText={mode === 'edit' ? 'Saving changes...' : 'Saving block...'}
         className="self-start bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors"
       >
         {mode === 'edit' ? 'Save Changes' : 'Add Block'}
-      </button>
+      </SubmitButton>
     </form>
   )
 }

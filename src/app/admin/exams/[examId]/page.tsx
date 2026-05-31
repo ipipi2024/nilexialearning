@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createSection, updateExamStatus, updateExamAccess } from '@/app/admin/actions'
 import type { Section } from '@/types/database'
+import { SubmitButton } from '@/components/SubmitButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -55,15 +56,15 @@ export default async function ExamPage({ params }: Props) {
           </p>
           {exam.status === 'draft' ? (
             <form action={updateExamStatus.bind(null, examId, 'published')}>
-              <button type="submit" className="text-sm font-semibold bg-green-600 text-white px-4 py-1.5 rounded-xl hover:bg-green-700 transition-colors">
+              <SubmitButton pendingText="Publishing..." className="text-sm font-semibold bg-green-600 text-white px-4 py-1.5 rounded-xl hover:bg-green-700 transition-colors">
                 Publish Exam
-              </button>
+              </SubmitButton>
             </form>
           ) : (
             <form action={updateExamStatus.bind(null, examId, 'draft')}>
-              <button type="submit" className="text-sm font-semibold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-1.5 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+              <SubmitButton pendingText="Moving..." className="text-sm font-semibold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-1.5 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                 Move to Draft
-              </button>
+              </SubmitButton>
             </form>
           )}
         </div>
@@ -114,9 +115,9 @@ export default async function ExamPage({ params }: Props) {
                   ? `Paid — ${exam.price_currency} ${Number(exam.price_amount).toFixed(2)}`
                   : 'Free'}
               </p>
-              <button type="submit" className="text-sm font-semibold bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors">
+              <SubmitButton pendingText="Saving..." className="text-sm font-semibold bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors">
                 Save Settings
-              </button>
+              </SubmitButton>
             </div>
           </form>
         </div>
@@ -184,9 +185,9 @@ export default async function ExamPage({ params }: Props) {
                 </div>
               </div>
 
-              <button type="submit" className="self-start bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors">
+              <SubmitButton pendingText="Adding..." className="self-start bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors">
                 Add Section
-              </button>
+              </SubmitButton>
             </form>
           </div>
         </details>

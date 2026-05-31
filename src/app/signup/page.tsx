@@ -1,4 +1,5 @@
 import { signup } from '@/app/auth/actions'
+import { SubmitButton } from '@/components/SubmitButton'
 
 type Props = {
   searchParams: Promise<{ error?: string; existing?: string }>
@@ -67,12 +68,12 @@ export default async function SignupPage({ searchParams }: Props) {
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">At least 6 characters.</p>
             </div>
 
-            <button
-              type="submit"
+            <SubmitButton
+              pendingText="Creating account..."
               className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-xl hover:bg-blue-700 transition-colors"
             >
               Sign Up
-            </button>
+            </SubmitButton>
           </form>
 
           <p className="mt-5 text-sm text-center text-gray-500 dark:text-gray-400">

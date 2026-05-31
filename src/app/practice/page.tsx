@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { startAttempt } from './actions'
 import type { Exam } from '@/types/database'
+import { SubmitButton } from '@/components/SubmitButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -88,12 +89,12 @@ export default async function PracticePage() {
                           await startAttempt(exam.id)
                         }}
                       >
-                        <button
-                          type="submit"
+                        <SubmitButton
+                          pendingText="Starting..."
                           className="text-sm font-semibold bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors"
                         >
                           Start
-                        </button>
+                        </SubmitButton>
                       </form>
                     )}
 

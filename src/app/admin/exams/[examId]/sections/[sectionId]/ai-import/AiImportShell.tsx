@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { saveImportedQuestions } from '@/app/admin/actions'
+import { SubmitButton } from '@/components/SubmitButton'
 
 type DraftChoice = { label: string; text: string; is_correct: boolean }
 
@@ -336,15 +337,15 @@ export function AiImportShell({ examId, sectionId, existingNumbers }: Props) {
               <input type="hidden" name="exam_id" value={examId} />
               <input type="hidden" name="section_id" value={sectionId} />
               <input type="hidden" name="questions_json" value={JSON.stringify(drafts)} />
-              <button
-                type="submit"
+              <SubmitButton
+                pendingText="Saving questions..."
                 disabled={hasDuplicates}
-                className="w-full bg-green-600 text-white font-semibold py-3 rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="w-full bg-green-600 text-white font-semibold py-3 rounded-xl hover:bg-green-700 transition-colors text-sm"
               >
                 {hasDuplicates
                   ? 'Fix duplicate question numbers before saving'
                   : `Save ${drafts.length} Approved Question${drafts.length !== 1 ? 's' : ''}`}
-              </button>
+              </SubmitButton>
             </form>
           )}
         </>
