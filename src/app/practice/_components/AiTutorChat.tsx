@@ -338,7 +338,14 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
 
         {/* Input area */}
         <div className="shrink-0 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-end gap-2">
+          {/* Unified composer */}
+          <div
+            className={`flex items-end gap-1 rounded-2xl border px-3 py-2 transition-colors bg-white dark:bg-gray-800 ${
+              isListening
+                ? 'border-red-400 dark:border-red-500'
+                : 'border-gray-200 dark:border-gray-700 focus-within:border-purple-400 dark:focus-within:border-purple-600 focus-within:ring-2 focus-within:ring-purple-500/20'
+            }`}
+          >
             <textarea
               ref={inputRef}
               value={input}
@@ -347,10 +354,10 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
                 setVoiceError(null)
               }}
               onKeyDown={handleKeyDown}
-              placeholder={isListening ? 'Listening…' : 'Ask a question… (Enter to send)'}
-              rows={2}
+              placeholder={isListening ? 'Listening…' : 'Ask a question…'}
+              rows={1}
               disabled={isLoading}
-              className="flex-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none disabled:opacity-60"
+              className="flex-1 bg-transparent resize-none text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none leading-5 py-1 max-h-28 overflow-y-auto disabled:opacity-60"
             />
 
             {/* Mic button */}
@@ -358,33 +365,25 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
               onClick={toggleVoice}
               disabled={isLoading}
               aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
-              className={`shrink-0 flex flex-col items-center justify-center gap-0.5 rounded-xl text-xs font-semibold transition-colors h-[4.5rem] w-12 ${
+              className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
                 isListening
-                  ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
-                  : 'border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-purple-400 dark:hover:border-purple-600 hover:text-purple-600 dark:hover:text-purple-400 bg-white dark:bg-gray-800'
-              } disabled:opacity-50`}
+                  ? 'bg-red-500 text-white animate-pulse'
+                  : 'text-gray-400 dark:text-gray-500 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/60'
+              } disabled:opacity-40`}
             >
               {isListening ? (
-                <>
-                  {/* Stop square icon */}
-                  <span className="block w-3.5 h-3.5 rounded-sm bg-white" />
-                  <span>Stop</span>
-                </>
+                <span className="block w-3 h-3 rounded-sm bg-white" aria-hidden="true" />
               ) : (
-                <>
-                  {/* Microphone icon */}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="w-5 h-5"
-                    aria-hidden="true"
-                  >
-                    <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-                    <path d="M19 11a1 1 0 0 0-2 0 5 5 0 0 1-10 0 1 1 0 0 0-2 0 7 7 0 0 0 6 6.92V20H9a1 1 0 0 0 0 2h6a1 1 0 0 0 0-2h-2v-2.08A7 7 0 0 0 19 11z" />
-                  </svg>
-                  <span>Mic</span>
-                </>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="w-5 h-5"
+                  aria-hidden="true"
+                >
+                  <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                  <path d="M19 11a1 1 0 0 0-2 0 5 5 0 0 1-10 0 1 1 0 0 0-2 0 7 7 0 0 0 6 6.92V20H9a1 1 0 0 0 0 2h6a1 1 0 0 0 0-2h-2v-2.08A7 7 0 0 0 19 11z" />
+                </svg>
               )}
             </button>
 
@@ -392,9 +391,31 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
             <button
               onClick={() => sendMessage(input)}
               disabled={isLoading || input.trim().length === 0}
-              className="shrink-0 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300 dark:disabled:bg-purple-900 text-white font-semibold px-4 py-2 rounded-xl text-sm transition-colors h-[4.5rem] flex items-center justify-center"
+              aria-label="Send message"
+              className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-colors bg-purple-600 hover:bg-purple-700 disabled:bg-gray-100 dark:disabled:bg-gray-700 text-white disabled:text-gray-400 dark:disabled:text-gray-500"
             >
-              Send
+              {isLoading ? (
+                <svg
+                  className="animate-spin w-4 h-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="w-5 h-5"
+                  aria-hidden="true"
+                >
+                  <path fillRule="evenodd" d="M11.47 2.47a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 1 1-1.06 1.06l-6.22-6.22V21a.75.75 0 0 1-1.5 0V4.81l-6.22 6.22a.75.75 0 1 1-1.06-1.06l7.5-7.5Z" clipRule="evenodd" />
+                </svg>
+              )}
             </button>
           </div>
 
