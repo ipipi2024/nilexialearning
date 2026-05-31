@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
-import { updatePassword } from '@/app/auth/actions'
+import { verifyOtpAndUpdatePassword } from '@/app/auth/actions'
 
 type FormState = { error?: string; success?: boolean }
 
@@ -17,14 +17,17 @@ function Spinner() {
   )
 }
 
-export function ResetPasswordForm() {
-  const [state, action, isPending] = useActionState<FormState, FormData>(updatePassword, {})
+export function ResetPasswordForm({ email }: { email: string }) {
+  const [state, action, isPending] = useActionState<FormState, FormData>(
+    verifyOtpAndUpdatePassword,
+    {}
+  )
 
   if (state.success) {
     return (
       <div className="space-y-4">
         <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl px-4 py-4 text-sm text-green-700 dark:text-green-400">
-          Password updated successfully.
+          Password updated successfully. Please log in with your new password.
         </div>
         <a
           href="/login"
@@ -38,11 +41,34 @@ export function ResetPasswordForm() {
 
   return (
     <form action={action} className="flex flex-col gap-4">
+      {/* Email is submitted with the form but shown read-only to the user */}
+      <input type="hidden" name="email" value={email} />
+
       {state.error && (
         <p className="text-sm text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3">
           {state.error}
         </p>
       )}
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="token">
+          Reset Code
+        </label>
+        <input
+          id="token"
+          name="token"
+          type="text"
+          inputMode="numeric"
+          maxLength={8}
+          required
+          placeholder="12345678"
+          autoComplete="one-time-code"
+          className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-3 py-2 text-sm tracking-widest text-center text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+          Check your email for the 6–8 digit reset code.
+        </p>
+      </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="password">
@@ -83,10 +109,10 @@ export function ResetPasswordForm() {
         {isPending ? (
           <span className="inline-flex items-center justify-center gap-2">
             <Spinner />
-            Updating password...
+            Resetting password...
           </span>
         ) : (
-          'Update Password'
+          'Reset Password'
         )}
       </button>
     </form>

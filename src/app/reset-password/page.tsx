@@ -1,23 +1,15 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { ResetPasswordForm } from './ResetPasswordForm'
 
-export default async function ResetPasswordPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+type Props = {
+  searchParams: Promise<{ email?: string }>
+}
 
-  // No session means the link was invalid, already used, or has expired.
-  if (!user) {
-    redirect(
-      `/login?error=${encodeURIComponent('Reset link is invalid or has expired. Please request a new one.')}`
-    )
-  }
+export default async function ResetPasswordPage({ searchParams }: Props) {
+  const { email } = await searchParams
 
-  // If the user is already fully logged in (not via recovery), redirect them away.
-  // They can change their password from account settings instead.
-  // (We don't block this — just let them set a new password either way.)
+  // No email means user navigated here directly — send them to the request form.
+  if (!email) redirect('/forgot-password')
 
   return (
     <main className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
@@ -29,12 +21,24 @@ export default async function ResetPasswordPage() {
 
       <div className="flex-1 flex items-center justify-center px-6 pb-16">
         <div className="w-full max-w-sm">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Set new password</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Reset your password</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-            Choose a new password for your account.
+            Enter the reset code we sent to{' '}
+            <span className="font-medium text-gray-700 dark:text-gray-300">{email}</span>{' '}
+            along with your new password.
           </p>
 
-          <ResetPasswordForm />
+          <ResetPasswordForm email={email} />
+
+          <p className="mt-5 text-sm text-center text-gray-500 dark:text-gray-400">
+            Didn&apos;t receive a code?{' '}
+            <a
+              href="/forgot-password"
+              className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+            >
+              Request again
+            </a>
+          </p>
         </div>
       </div>
     </main>

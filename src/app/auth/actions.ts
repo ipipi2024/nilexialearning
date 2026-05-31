@@ -73,31 +73,48 @@ export async function logout() {
 export async function requestPasswordReset(formData: FormData) {
   const supabase = await createClient()
   const email = (formData.get('email') as string).trim()
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.APP_URL ?? ''
 
-  await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${appUrl}/auth/callback?next=/reset-password`,
-  })
+  // No redirectTo — OTP mode sends a code to the user's email instead of a magic link.
+  await supabase.auth.resetPasswordForEmail(email)
 
-  // Always redirect to the sent state — never reveal whether the email exists.
-  redirect('/forgot-password?sent=1')
+  // Always redirect to the OTP form — never reveal whether the email exists.
+  redirect(`/reset-password?email=${encodeURIComponent(email)}`)
 }
 
-export async function updatePassword(
+export async function verifyOtpAndUpdatePassword(
   _prevState: { error?: string; success?: boolean },
   formData: FormData
 ): Promise<{ error?: string; success?: boolean }> {
+  const email = (formData.get('email') as string)?.trim()
+  const token = (formData.get('token') as string)?.trim()
   const password = (formData.get('password') as string) ?? ''
   const confirmPassword = (formData.get('confirm_password') as string) ?? ''
 
+  if (!email) return { error: 'Email is required.' }
+  if (!token) return { error: 'Reset code is required.' }
   if (!password) return { error: 'Password is required.' }
   if (password.length < 8) return { error: 'Password must be at least 8 characters.' }
   if (password !== confirmPassword) return { error: 'Passwords do not match.' }
 
   const supabase = await createClient()
-  const { error } = await supabase.auth.updateUser({ password })
 
-  if (error) return { error: error.message }
+  // Step 1: Verify the OTP — this creates a recovery session in cookies.
+  const { error: otpError } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: 'recovery',
+  })
+
+  if (otpError) {
+    return { error: 'Invalid or expired reset code. Please request a new one.' }
+  }
+
+  // Step 2: Use the recovery session to set the new password.
+  const { error: updateError } = await supabase.auth.updateUser({ password })
+
+  if (updateError) {
+    return { error: updateError.message }
+  }
 
   revalidatePath('/', 'layout')
   return { success: true }
