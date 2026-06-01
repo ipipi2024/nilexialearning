@@ -174,6 +174,7 @@ const STARTER_PROMPTS = [
 
 export function AiTutorChat({ questionId, attemptId }: Props) {
   const [isOpen, setIsOpen] = useState(false)
+  const [mode, setMode] = useState<'compact' | 'fullscreen'>('compact')
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -279,6 +280,16 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
   useEffect(() => {
     return () => { recognitionRef.current?.stop() }
   }, [])
+
+  // Lock body scroll when fullscreen mode is active
+  useEffect(() => {
+    if (isOpen && mode === 'fullscreen') {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [isOpen, mode])
 
   // -------------------------------------------------------------------------
   // Attachment
@@ -428,6 +439,12 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
   // -------------------------------------------------------------------------
 
   const canSend = !isLoading && (input.trim().length > 0 || !!pendingFile)
+  const isFullscreen = mode === 'fullscreen'
+
+  function handleClose() {
+    setIsOpen(false)
+    setMode('compact')
+  }
 
   // -------------------------------------------------------------------------
   // JSX
@@ -444,22 +461,24 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
         Ask AI Tutor
       </button>
 
-      {/* Backdrop */}
-      {isOpen && (
+      {/* Backdrop — compact mode only */}
+      {isOpen && !isFullscreen && (
         <div
           className="fixed inset-0 bg-black/40 z-40"
-          onClick={() => setIsOpen(false)}
+          onClick={handleClose}
           aria-hidden="true"
         />
       )}
 
-      {/* Drawer — has transition-transform, so fixed children are trapped inside.
+      {/* Drawer — compact: bottom sheet; fullscreen: covers viewport.
           The image zoom overlay is rendered OUTSIDE this element. */}
       <div
-        className={`fixed bottom-0 left-0 right-0 z-50 flex flex-col bg-white dark:bg-gray-900 rounded-t-2xl shadow-2xl transition-transform duration-300 ${
-          isOpen ? 'translate-y-0' : 'translate-y-full'
-        }`}
-        style={{ maxHeight: '82vh' }}
+        className={
+          isFullscreen
+            ? 'fixed inset-0 z-50 flex flex-col bg-white dark:bg-gray-900'
+            : `fixed bottom-0 left-0 right-0 z-50 flex flex-col bg-white dark:bg-gray-900 rounded-t-2xl shadow-2xl transition-transform duration-300 ${isOpen ? 'translate-y-0' : 'translate-y-full'}`
+        }
+        style={isFullscreen ? undefined : { maxHeight: '82vh' }}
         role="dialog"
         aria-label="AI Tutor chat"
       >
@@ -483,13 +502,41 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
                 <span className="text-xs text-gray-400 dark:text-gray-500 font-normal shrink-0">— step by step</span>
               )}
             </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 text-lg leading-none p-1 -mr-1"
-              aria-label="Close AI Tutor"
-            >
-              ✕
-            </button>
+            <div className="flex items-center gap-0.5">
+              {/* Expand / minimize toggle */}
+              {isFullscreen ? (
+                <button
+                  onClick={() => setMode('compact')}
+                  aria-label="Minimize AI Tutor"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4" aria-hidden="true">
+                    <path d="M8 3v3a2 2 0 01-2 2H3M21 8h-3a2 2 0 01-2-2V3M3 16h3a2 2 0 012 2v3M16 21v-3a2 2 0 012-2h3" />
+                  </svg>
+                </button>
+              ) : (
+                <button
+                  onClick={() => setMode('fullscreen')}
+                  aria-label="Expand AI Tutor"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4" aria-hidden="true">
+                    <path d="M3 8V5a2 2 0 012-2h3M16 3h3a2 2 0 012 2v3M21 16v3a2 2 0 01-2 2h-3M8 21H5a2 2 0 01-2-2v-3" />
+                  </svg>
+                </button>
+              )}
+
+              {/* Close */}
+              <button
+                onClick={handleClose}
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label="Close AI Tutor"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4" aria-hidden="true">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
