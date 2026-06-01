@@ -78,7 +78,7 @@ export default async function AiPaymentsPage({ searchParams }: Props) {
             return (
               <div
                 key={req.id}
-                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 space-y-4"
+                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 space-y-4 overflow-hidden min-w-0"
               >
                 {/* Status + date */}
                 <div className="flex items-center justify-between">
@@ -101,29 +101,29 @@ export default async function AiPaymentsPage({ searchParams }: Props) {
                 </div>
 
                 {/* Details grid */}
-                <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
-                  <div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                  <div className="min-w-0">
                     <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">Student</p>
-                    <p className="font-medium text-gray-800 dark:text-gray-200">{req.user_email}</p>
+                    <p className="font-medium text-gray-800 dark:text-gray-200 break-words">{req.user_email}</p>
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">Plan</p>
-                    <p className="font-medium text-gray-800 dark:text-gray-200">
+                    <p className="font-medium text-gray-800 dark:text-gray-200 break-words">
                       {plan
                         ? `${plan.name} — ${plan.price_currency} ${Number(plan.price_amount).toFixed(0)}/mo (${plan.monthly_message_limit} msgs)`
                         : req.plan_id}
                     </p>
                   </div>
                   {req.payer_name && (
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">Payer Name</p>
-                      <p className="text-gray-700 dark:text-gray-300">{req.payer_name}</p>
+                      <p className="text-gray-700 dark:text-gray-300 break-words">{req.payer_name}</p>
                     </div>
                   )}
                   {req.payment_reference && (
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">Reference</p>
-                      <p className="text-gray-700 dark:text-gray-300">{req.payment_reference}</p>
+                      <p className="text-gray-700 dark:text-gray-300 break-words">{req.payment_reference}</p>
                     </div>
                   )}
                 </div>
@@ -140,12 +140,12 @@ export default async function AiPaymentsPage({ searchParams }: Props) {
                 {/* Proof image */}
                 <div>
                   <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">Payment Proof</p>
-                  <a href={req.proof_image_url} target="_blank" rel="noopener noreferrer">
+                  <a href={req.proof_image_url} target="_blank" rel="noopener noreferrer" className="block overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={req.proof_image_url}
                       alt="Payment proof"
-                      className="max-w-xs h-auto max-h-48 object-contain rounded-xl border border-gray-200 dark:border-gray-700"
+                      className="max-w-full h-auto max-h-48 object-contain rounded-xl border border-gray-200 dark:border-gray-700"
                     />
                   </a>
                   <a
@@ -160,27 +160,27 @@ export default async function AiPaymentsPage({ searchParams }: Props) {
 
                 {/* Actions */}
                 {req.status === 'pending' && (
-                  <div className="flex gap-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                  <div className="flex flex-col gap-3 pt-3 border-t border-gray-100 dark:border-gray-700 sm:flex-row">
                     <form action={approveAiPaymentRequest}>
                       <input type="hidden" name="request_id" value={req.id} />
                       <SubmitButton
                         pendingText="Activating…"
-                        className="bg-green-600 text-white text-sm font-semibold px-5 py-2 rounded-xl hover:bg-green-700 transition-colors"
+                        className="w-full sm:w-auto bg-green-600 text-white text-sm font-semibold px-5 py-2 rounded-xl hover:bg-green-700 transition-colors"
                       >
                         Approve &amp; Activate
                       </SubmitButton>
                     </form>
-                    <form action={rejectAiPaymentRequest} className="flex flex-1 gap-2 items-center">
+                    <form action={rejectAiPaymentRequest} className="flex flex-col gap-2 sm:flex-row sm:flex-1 sm:items-center">
                       <input type="hidden" name="request_id" value={req.id} />
                       <input
                         name="admin_note"
                         type="text"
                         placeholder="Rejection reason (optional)"
-                        className="flex-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        className="min-w-0 w-full sm:flex-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-400"
                       />
                       <SubmitButton
                         pendingText="Rejecting…"
-                        className="bg-red-500 dark:bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-red-600 dark:hover:bg-red-700 transition-colors whitespace-nowrap"
+                        className="w-full sm:w-auto bg-red-500 dark:bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-red-600 dark:hover:bg-red-700 transition-colors"
                       >
                         Reject
                       </SubmitButton>
