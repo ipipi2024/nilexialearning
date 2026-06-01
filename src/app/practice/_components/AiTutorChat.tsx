@@ -156,6 +156,55 @@ const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/webp']
 const MAX_FILE_SIZE = 5 * 1024 * 1024
 
 // ---------------------------------------------------------------------------
+// AttachmentImage — chat bubble image with loading skeleton
+// ---------------------------------------------------------------------------
+
+function AttachmentImage({
+  url,
+  name,
+  onExpand,
+  hasText,
+}: {
+  url: string
+  name: string | null
+  onExpand: () => void
+  hasText: boolean
+}) {
+  const [imgStatus, setImgStatus] = useState<'loading' | 'loaded' | 'error'>('loading')
+
+  return (
+    <button
+      onClick={onExpand}
+      className={`block rounded-xl overflow-hidden border border-white/20 hover:opacity-90 transition-opacity ${hasText ? 'mt-2' : ''}`}
+      aria-label="View full image"
+    >
+      <div className="relative">
+        {imgStatus === 'loading' && (
+          <div className="w-32 h-24 rounded-xl bg-white/20 animate-pulse flex items-center justify-center">
+            <span className="text-xs text-white/50 select-none">Loading…</span>
+          </div>
+        )}
+        {imgStatus === 'error' && (
+          <div className="w-32 h-24 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
+            <span className="text-xs text-white/40 select-none">Unavailable</span>
+          </div>
+        )}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={url}
+          alt={name ?? 'Attached image'}
+          onLoad={() => setImgStatus('loaded')}
+          onError={() => setImgStatus('error')}
+          className={`max-h-40 w-auto max-w-full object-contain rounded-xl transition-opacity duration-300 ${
+            imgStatus === 'loaded' ? 'opacity-100' : 'opacity-0 absolute w-0 h-0'
+          }`}
+        />
+      </div>
+    </button>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Props / constants
 // ---------------------------------------------------------------------------
 
@@ -604,18 +653,12 @@ export function AiTutorChat({ questionId, attemptId }: Props) {
                       <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                     )}
                     {msg.attachment && (
-                      <button
-                        onClick={() => setExpandedImageUrl(msg.attachment!.url)}
-                        className={`block rounded-xl overflow-hidden border border-white/20 hover:opacity-90 transition-opacity ${msg.content !== '(image attached)' ? 'mt-2' : ''}`}
-                        aria-label="View full image"
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={msg.attachment.url}
-                          alt={msg.attachment.name ?? 'Attached image'}
-                          className="max-h-40 w-auto max-w-full object-contain rounded-xl"
-                        />
-                      </button>
+                      <AttachmentImage
+                        url={msg.attachment.url}
+                        name={msg.attachment.name}
+                        onExpand={() => setExpandedImageUrl(msg.attachment!.url)}
+                        hasText={msg.content !== '(image attached)'}
+                      />
                     )}
                   </>
                 )}
