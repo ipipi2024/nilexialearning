@@ -1,20 +1,15 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
 type Variant = 'question' | 'choice' | 'explanation'
 
-// Constrain thumbnail display size per context. Images are never up-scaled
-// (w-auto keeps natural size when smaller than the max), and the zoom modal
-// always shows the original at full resolution.
 const thumbnailClass: Record<Variant, string> = {
   question:    'block mx-auto w-auto h-auto max-w-full max-h-[320px] object-contain',
   choice:      'block mx-auto w-auto h-auto max-w-[220px] max-h-[160px] object-contain',
   explanation: 'block mx-auto w-auto h-auto max-w-full max-h-[360px] object-contain',
 }
 
-// Minimum wrapper height while the image is still loading, so the skeleton
-// has visible space. Chosen to match typical image sizes for each context.
 const skeletonMinHeight: Record<Variant, number> = {
   question:    180,
   choice:      120,
@@ -32,9 +27,35 @@ type Props = {
 export function ZoomableImage({ src, alt, variant, className }: Props) {
   const [open, setOpen] = useState(false)
   const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading')
+  const imgRef = useRef<HTMLImageElement>(null)
 
-  // Reset whenever the source URL changes (e.g. component re-keyed with new src)
-  useEffect(() => { setStatus('loading') }, [src])
+  // ── Cached-image fix ──────────────────────────────────────────────────────
+  // Browsers fire the load event synchronously at DOM insertion for cached
+  // images — before React attaches onLoad. By the time this effect runs
+  // (after commit), img.complete is already true for those images, so we
+  // read the flag directly instead of waiting for an event that already fired.
+  // For fresh images (img.complete === false) we fall back to onLoad/onError
+  // and add a 15-second timeout so a stuck network request shows an error
+  // rather than spinning forever.
+  useEffect(() => {
+    setStatus('loading')
+
+    const img = imgRef.current
+    if (!img) return
+
+    if (img.complete) {
+      // already resolved (cache hit or error)
+      setStatus(img.naturalWidth > 0 ? 'loaded' : 'error')
+      return
+    }
+
+    // Not yet complete — rely on onLoad / onError, with a timeout fallback.
+    const timer = setTimeout(() => {
+      setStatus((cur) => (cur === 'loading' ? 'error' : cur))
+    }, 15_000)
+
+    return () => clearTimeout(timer)
+  }, [src])
 
   const close = useCallback(() => setOpen(false), [])
 
@@ -54,13 +75,11 @@ export function ZoomableImage({ src, alt, variant, className }: Props) {
 
   return (
     <>
-      {/* Wrapper — provides min-height while loading so the skeleton is visible.
-          The img is always in the DOM so the browser fetches it and fires onLoad. */}
       <div
         className={`relative${className ? ` ${className}` : ''}`}
         style={status !== 'loaded' ? { minHeight: skeletonMinHeight[variant] } : undefined}
       >
-        {/* Skeleton — shown while loading */}
+        {/* Skeleton */}
         {status === 'loading' && (
           <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse">
             <span className="text-xs text-gray-400 dark:text-gray-500 select-none">
@@ -73,7 +92,7 @@ export function ZoomableImage({ src, alt, variant, className }: Props) {
         {status === 'error' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/60">
             <span className="text-xs text-gray-400 dark:text-gray-500 select-none">
-              Image unavailable
+              Image could not be loaded.
             </span>
             <a
               href={src}
@@ -89,6 +108,7 @@ export function ZoomableImage({ src, alt, variant, className }: Props) {
 
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
+          ref={imgRef}
           src={src}
           alt={alt}
           onLoad={() => setStatus('loaded')}
@@ -108,14 +128,11 @@ export function ZoomableImage({ src, alt, variant, className }: Props) {
           className="fixed inset-0 z-50 flex flex-col bg-black/90"
           onClick={close}
         >
-          {/* Header with close button */}
           <div
             className="flex items-center justify-between px-4 py-3 shrink-0"
             onClick={(e) => e.stopPropagation()}
           >
-            <span className="text-white/60 text-xs">
-              Pinch to zoom on mobile
-            </span>
+            <span className="text-white/60 text-xs">Pinch to zoom on mobile</span>
             <button
               onClick={close}
               aria-label="Close image viewer"
@@ -125,7 +142,6 @@ export function ZoomableImage({ src, alt, variant, className }: Props) {
             </button>
           </div>
 
-          {/* Scrollable image area — stopPropagation so panning doesn't close modal */}
           <div
             className="flex-1 overflow-auto flex items-center justify-center px-4 pb-2"
             onClick={(e) => e.stopPropagation()}
@@ -140,7 +156,6 @@ export function ZoomableImage({ src, alt, variant, className }: Props) {
             />
           </div>
 
-          {/* Footer instruction */}
           <p
             className="text-center text-white/40 text-xs py-3 shrink-0"
             onClick={(e) => e.stopPropagation()}
