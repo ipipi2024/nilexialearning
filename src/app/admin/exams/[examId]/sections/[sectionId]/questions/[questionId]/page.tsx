@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createExplanationBlock } from '@/app/admin/actions'
+import { createExplanationBlock, recalculateAnswers } from '@/app/admin/actions'
 import { ExplanationBlockForm } from '@/app/admin/_components/ExplanationBlockForm'
 import { AdminQuestionNav } from '@/app/admin/_components/AdminQuestionNav'
 import { DeleteQuestionButton } from '@/app/admin/_components/DeleteQuestionButton'
@@ -120,7 +120,20 @@ export default async function QuestionPage({ params }: Props) {
       {/* Choices */}
       {question.question_type === 'multiple_choice' && (
         <div>
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-3">Answer Choices</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white">Answer Choices</h2>
+            <form action={recalculateAnswers}>
+              <input type="hidden" name="question_id" value={questionId} />
+              <input type="hidden" name="exam_id" value={examId} />
+              <input type="hidden" name="section_id" value={sectionId} />
+              <button
+                type="submit"
+                className="text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                ↻ Recalculate student answers
+              </button>
+            </form>
+          </div>
           {!choices?.length ? (
             <p className="text-sm text-gray-500 dark:text-gray-400">No choices saved.</p>
           ) : (

@@ -245,6 +245,67 @@ export async function createExplanationBlock(formData: FormData) {
 }
 
 // ------------------------------------------------------------------
+// MCQ answer recalculation
+// ------------------------------------------------------------------
+
+// After choices are changed, re-evaluate every saved student answer for
+// that question. user_answers.answer stores the label ("A"/"B"/"C"/"D"),
+// which is stable across choice deletes/recreates, so we can always
+// determine the student's intent and update is_correct accordingly.
+async function recalculateQuestionAnswers(
+  admin: ReturnType<typeof createAdminClient>,
+  questionId: string
+): Promise<void> {
+  const { data: choices } = await admin
+    .from('choices')
+    .select('label, is_correct')
+    .eq('question_id', questionId)
+
+  if (!choices || choices.length === 0) return
+
+  const correctLabel = choices.find((c) => c.is_correct)?.label ?? null
+  if (!correctLabel) return
+
+  const { data: answers } = await admin
+    .from('user_answers')
+    .select('id, answer')
+    .eq('question_id', questionId)
+    .not('answer', 'is', null)
+
+  if (!answers || answers.length === 0) return
+
+  const nowCorrectIds = answers.filter((a) => a.answer === correctLabel).map((a) => a.id)
+  const nowIncorrectIds = answers.filter((a) => a.answer !== correctLabel).map((a) => a.id)
+
+  await Promise.all([
+    nowCorrectIds.length > 0
+      ? admin
+          .from('user_answers')
+          .update({ is_correct: true, self_check_status: 'correct' })
+          .in('id', nowCorrectIds)
+      : Promise.resolve(),
+    nowIncorrectIds.length > 0
+      ? admin
+          .from('user_answers')
+          .update({ is_correct: false, self_check_status: 'incorrect' })
+          .in('id', nowIncorrectIds)
+      : Promise.resolve(),
+  ])
+}
+
+// Manual recalculation action — exposed for the admin "Recalculate" button.
+export async function recalculateAnswers(formData: FormData) {
+  const admin = await requireAdmin()
+  const questionId = formData.get('question_id') as string
+  const examId = formData.get('exam_id') as string
+  const sectionId = formData.get('section_id') as string
+
+  await recalculateQuestionAnswers(admin, questionId)
+
+  redirect(`/admin/exams/${examId}/sections/${sectionId}/questions/${questionId}`)
+}
+
+// ------------------------------------------------------------------
 // Update Question + Choices
 // ------------------------------------------------------------------
 
@@ -328,6 +389,10 @@ export async function updateQuestion(questionId: string, formData: FormData) {
       const { error: choiceError } = await admin.from('choices').insert(choices)
       if (choiceError) throw new Error(choiceError.message)
     }
+
+    // Recalculate correctness for all saved student answers now that the
+    // correct choice may have changed.
+    await recalculateQuestionAnswers(admin, questionId)
   }
 
   redirect(`/admin/exams/${examId}/sections/${sectionId}/questions/${questionId}`)
