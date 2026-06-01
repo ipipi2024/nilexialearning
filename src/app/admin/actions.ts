@@ -118,12 +118,25 @@ async function uploadToStorage(
   return publicUrl
 }
 
+function parseSubLabel(raw: string | null | undefined): string | null {
+  if (!raw) return null
+  const normalized = raw.trim().toLowerCase().replace(/[()]/g, '')
+  return normalized || null
+}
+
+function makeDisplayLabel(number: number, subLabel: string | null): string {
+  return subLabel ? `${number}(${subLabel})` : String(number)
+}
+
 export async function createQuestion(formData: FormData) {
   const admin = await requireAdmin()
 
   const examId = formData.get('exam_id') as string
   const sectionId = formData.get('section_id') as string
   const questionType = formData.get('question_type') as string
+  const number = parseInt(formData.get('number') as string)
+  const subLabel = parseSubLabel(formData.get('sub_label') as string | null)
+  const displayLabel = makeDisplayLabel(number, subLabel)
 
   // Optional image upload
   let imageUrl: string | null = null
@@ -139,7 +152,9 @@ export async function createQuestion(formData: FormData) {
     .insert({
       exam_id: examId,
       section_id: sectionId,
-      number: parseInt(formData.get('number') as string),
+      number,
+      sub_label: subLabel,
+      display_label: displayLabel,
       question_text: formData.get('question_text') as string,
       question_type: questionType,
       question_image_url: imageUrl,
@@ -239,6 +254,9 @@ export async function updateQuestion(questionId: string, formData: FormData) {
   const examId = formData.get('exam_id') as string
   const sectionId = formData.get('section_id') as string
   const questionType = formData.get('question_type') as string
+  const number = parseInt(formData.get('number') as string)
+  const subLabel = parseSubLabel(formData.get('sub_label') as string | null)
+  const displayLabel = makeDisplayLabel(number, subLabel)
 
   // Use existing image URL unless a new file is uploaded
   let imageUrl: string | null = (formData.get('existing_image_url') as string) || null
@@ -252,7 +270,9 @@ export async function updateQuestion(questionId: string, formData: FormData) {
   const { error } = await admin
     .from('questions')
     .update({
-      number: parseInt(formData.get('number') as string),
+      number,
+      sub_label: subLabel,
+      display_label: displayLabel,
       question_text: formData.get('question_text') as string,
       question_type: questionType,
       question_image_url: imageUrl,
@@ -411,6 +431,7 @@ export async function saveImportedQuestions(formData: FormData) {
   type DraftChoice = { label: string; text: string; is_correct: boolean }
   type DraftQuestion = {
     number: number
+    sub_label?: string | null
     question_type: 'multiple_choice'
     question_text: string
     choices: DraftChoice[]
@@ -425,12 +446,17 @@ export async function saveImportedQuestions(formData: FormData) {
   }
 
   for (const draft of drafts) {
+    const draftSubLabel = parseSubLabel(draft.sub_label as string | null | undefined)
+    const draftDisplayLabel = makeDisplayLabel(draft.number, draftSubLabel)
+
     const { data: question, error: qErr } = await admin
       .from('questions')
       .insert({
         exam_id: examId,
         section_id: sectionId,
         number: draft.number,
+        sub_label: draftSubLabel,
+        display_label: draftDisplayLabel,
         question_text: draft.question_text,
         question_type: 'multiple_choice',
         question_image_url: null,

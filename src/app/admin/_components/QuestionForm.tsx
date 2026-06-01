@@ -7,6 +7,7 @@ import { SubmitButton } from '@/components/SubmitButton'
 
 type DefaultValues = {
   number: number
+  sub_label: string | null
   question_text: string
   question_type: QuestionType
   marks: number
@@ -94,6 +95,24 @@ export function QuestionForm({
             className={inputClass}
           />
         </div>
+      </div>
+
+      <div>
+        <label className={labelClass} htmlFor="sub_label">
+          Sub-label{' '}
+          <span className="font-normal text-gray-400 dark:text-gray-500">(optional)</span>
+        </label>
+        <input
+          id="sub_label"
+          name="sub_label"
+          type="text"
+          placeholder="a"
+          defaultValue={defaultValues?.sub_label ?? ''}
+          className={inputClass}
+        />
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+          For questions like 31(a), 31(b) — enter just the letter or part, e.g. <em>a</em>. Leave blank for normal questions.
+        </p>
       </div>
 
       <div>

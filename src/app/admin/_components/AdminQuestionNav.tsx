@@ -1,11 +1,10 @@
-type NavQuestion = { id: string; number: number }
+type NavQuestion = { id: string; number: number; display_label: string | null }
 
 type Props = {
   examId: string
   sectionId: string
   previousQuestion?: NavQuestion | null
   nextQuestion?: NavQuestion | null
-  /** On the edit page, prev/next link to the question detail, not another edit page */
   questionId?: string
 }
 
@@ -23,27 +22,27 @@ export function AdminQuestionNav({
       {previousQuestion ? (
         <a
           href={`${questionBase}/${previousQuestion.id}`}
-          className="text-gray-500 hover:text-gray-700"
+          className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
         >
-          ← Q{previousQuestion.number}
+          ← Q{previousQuestion.display_label ?? previousQuestion.number}
         </a>
       ) : (
-        <span className="text-gray-300 select-none">← Q—</span>
+        <span className="text-gray-300 dark:text-gray-600 select-none">← Q—</span>
       )}
 
-      <a href={sectionHref} className="text-gray-500 hover:text-gray-700">
+      <a href={sectionHref} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
         Section
       </a>
 
       {nextQuestion ? (
         <a
           href={`${questionBase}/${nextQuestion.id}`}
-          className="text-gray-500 hover:text-gray-700"
+          className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
         >
-          Q{nextQuestion.number} →
+          Q{nextQuestion.display_label ?? nextQuestion.number} →
         </a>
       ) : (
-        <span className="text-gray-300 select-none">Q— →</span>
+        <span className="text-gray-300 dark:text-gray-600 select-none">Q— →</span>
       )}
     </div>
   )

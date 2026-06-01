@@ -14,7 +14,9 @@ export default async function EditQuestionPage({ params }: Props) {
   const [{ data: question }, { data: choices }, { data: sectionQuestions }] = await Promise.all([
     admin.from('questions').select('*').eq('id', questionId).single(),
     admin.from('choices').select('*').eq('question_id', questionId).order('label'),
-    admin.from('questions').select('id, number').eq('section_id', sectionId).order('number'),
+    admin.from('questions').select('id, number, display_label').eq('section_id', sectionId)
+      .order('number', { ascending: true })
+      .order('sub_label', { ascending: true, nullsFirst: true }),
   ])
 
   if (!question) {
@@ -40,7 +42,7 @@ export default async function EditQuestionPage({ params }: Props) {
           nextQuestion={nextQuestion}
         />
         <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-          Edit Question {question.number}
+          Edit Question {question.display_label ?? question.number}
         </h1>
       </div>
 
@@ -51,6 +53,7 @@ export default async function EditQuestionPage({ params }: Props) {
           mode="edit"
           defaultValues={{
             number: question.number,
+            sub_label: question.sub_label,
             question_text: question.question_text,
             question_type: question.question_type,
             marks: question.marks,

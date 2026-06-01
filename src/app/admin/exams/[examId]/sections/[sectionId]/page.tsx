@@ -9,7 +9,9 @@ export default async function SectionPage({ params }: Props) {
 
   const [{ data: section }, { data: questions }] = await Promise.all([
     admin.from('sections').select('*').eq('id', sectionId).single(),
-    admin.from('questions').select('*').eq('section_id', sectionId).order('number'),
+    admin.from('questions').select('*').eq('section_id', sectionId)
+      .order('number', { ascending: true })
+      .order('sub_label', { ascending: true, nullsFirst: true }),
   ])
 
   if (!section) {
@@ -64,8 +66,8 @@ export default async function SectionPage({ params }: Props) {
                   href={`/admin/exams/${examId}/sections/${sectionId}/questions/${q.id}`}
                   className="flex items-center gap-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
                 >
-                  <span className="text-sm font-semibold text-gray-400 dark:text-gray-500 w-7 shrink-0">
-                    Q{q.number}
+                  <span className="text-sm font-semibold text-gray-400 dark:text-gray-500 shrink-0">
+                    Q{q.display_label ?? q.number}
                   </span>
                   <span className="text-sm text-gray-900 dark:text-gray-100 flex-1 truncate">
                     {q.question_text}

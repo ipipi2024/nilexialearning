@@ -68,6 +68,8 @@ export type Question = {
   exam_id: string
   section_id: string
   number: number
+  sub_label: string | null
+  display_label: string | null
   question_text: string
   question_type: QuestionType
   question_image_url: string | null

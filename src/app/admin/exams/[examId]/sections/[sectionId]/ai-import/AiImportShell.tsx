@@ -11,6 +11,7 @@ type DraftChoice = { label: string; text: string; is_correct: boolean }
 
 type DraftQuestion = {
   number: number
+  sub_label?: string | null
   question_type: 'multiple_choice'
   question_text: string
   choices: DraftChoice[]
@@ -21,7 +22,12 @@ type DraftQuestion = {
 type Props = {
   examId: string
   sectionId: string
-  existingNumbers: number[]
+  existingLabels: string[]
+}
+
+function draftDisplayLabel(d: DraftQuestion): string {
+  const sl = d.sub_label?.trim().toLowerCase().replace(/[()]/g, '') || null
+  return sl ? `${d.number}(${sl})` : String(d.number)
 }
 
 function Md({ text }: { text: string }) {
@@ -76,7 +82,7 @@ function DraftCard({
       {/* Card header */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Q{draft.number}</span>
+          <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Q{draftDisplayLabel(draft)}</span>
           {draft.needs_review && (
             <span className="text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-2 py-0.5 rounded-full">
               Needs Review
@@ -84,7 +90,7 @@ function DraftCard({
           )}
           {isDuplicate && (
             <span className="text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400 px-2 py-0.5 rounded-full">
-              ⚠ Number already exists — change it below
+              ⚠ Label already exists — change number or sub-label below
             </span>
           )}
         </div>
@@ -99,15 +105,27 @@ function DraftCard({
 
       {/* Edit fields */}
       <div className="space-y-4">
-        <div>
-          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Question No.</label>
-          <input
-            type="number"
-            min="1"
-            value={draft.number}
-            onChange={(e) => set('number', parseInt(e.target.value) || draft.number)}
-            className="w-24 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+        <div className="flex gap-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Question No.</label>
+            <input
+              type="number"
+              min="1"
+              value={draft.number}
+              onChange={(e) => set('number', parseInt(e.target.value) || draft.number)}
+              className="w-20 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Sub-label <span className="font-normal">(optional, e.g. a)</span></label>
+            <input
+              type="text"
+              value={draft.sub_label ?? ''}
+              placeholder="a"
+              onChange={(e) => set('sub_label', e.target.value.trim().toLowerCase().replace(/[()]/g, '') || null)}
+              className="w-20 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
         </div>
 
         <div>
@@ -198,14 +216,14 @@ function DraftCard({
   )
 }
 
-export function AiImportShell({ examId, sectionId, existingNumbers }: Props) {
+export function AiImportShell({ examId, sectionId, existingLabels }: Props) {
   const [step, setStep] = useState<'upload' | 'preview'>('upload')
   const [drafts, setDrafts] = useState<DraftQuestion[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const existingSet = new Set(existingNumbers)
-  const hasDuplicates = drafts.some((d) => existingSet.has(d.number))
+  const existingLabelSet = new Set(existingLabels)
+  const hasDuplicates = drafts.some((d) => existingLabelSet.has(draftDisplayLabel(d)))
 
   async function handleGenerate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -298,7 +316,7 @@ export function AiImportShell({ examId, sectionId, existingNumbers }: Props) {
               </p>
               {hasDuplicates && (
                 <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-                  Some numbers already exist in this section. Edit them before saving.
+                  Some labels already exist in this section. Edit the number or sub-label before saving.
                 </p>
               )}
             </div>
@@ -324,7 +342,7 @@ export function AiImportShell({ examId, sectionId, existingNumbers }: Props) {
                   key={i}
                   draft={draft}
                   index={i}
-                  isDuplicate={existingSet.has(draft.number)}
+                  isDuplicate={existingLabelSet.has(draftDisplayLabel(draft))}
                   onChange={(updated) => updateDraft(i, updated)}
                   onRemove={() => removeDraft(i)}
                 />

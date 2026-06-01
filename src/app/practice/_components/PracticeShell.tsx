@@ -28,16 +28,16 @@ type Props = {
   }
   questions: QuestionWithExtras[]
   initialAnswers: UserAnswer[]
-  initialQuestionNumber?: number
+  initialQuestionId?: string
 }
 
-export function PracticeShell({ attemptId, exam, questions, initialAnswers, initialQuestionNumber }: Props) {
+export function PracticeShell({ attemptId, exam, questions, initialAnswers, initialQuestionId }: Props) {
   const router = useRouter()
   const pathname = usePathname()
 
   const [currentIndex, setCurrentIndex] = useState(() => {
-    if (!initialQuestionNumber) return 0
-    const idx = questions.findIndex((q) => q.number === initialQuestionNumber)
+    if (!initialQuestionId) return 0
+    const idx = questions.findIndex((q) => q.id === initialQuestionId)
     return idx >= 0 ? idx : 0
   })
   const [answers, setAnswers] = useState<Record<string, string>>(() => {
@@ -108,7 +108,7 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
 
   function navigateTo(index: number) {
     setCurrentIndex(index)
-    router.replace(`${pathname}?q=${questions[index].number}`)
+    router.replace(`${pathname}?q=${questions[index].id}`)
   }
 
   const selfCheck = selfChecks[question.id]
@@ -123,7 +123,7 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
               {exam.subject} — Paper {exam.paper_number} ({exam.year})
             </p>
             <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-              Question {question.number} of {total}
+              Question {question.display_label ?? question.number} of {total}
             </p>
           </div>
           <a
@@ -149,7 +149,7 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
           <div className="flex items-start justify-between gap-2 mb-3">
             <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 px-2 py-0.5 rounded-full">
-              Q{question.number}
+              Q{question.display_label ?? question.number}
             </span>
             <span className="text-xs text-gray-400 dark:text-gray-500">
               {question.marks} mark{question.marks !== 1 ? 's' : ''}
@@ -368,7 +368,7 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
                     <button
                       key={q.id}
                       onClick={() => navigateTo(i)}
-                      className={`w-9 h-9 rounded-lg text-xs font-semibold transition-colors ${
+                      className={`min-w-9 h-9 px-1.5 rounded-lg text-xs font-semibold transition-colors ${
                         isCurrent
                           ? 'bg-blue-600 text-white'
                           : answered
@@ -376,7 +376,7 @@ export function PracticeShell({ attemptId, exam, questions, initialAnswers, init
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
                       }`}
                     >
-                      {q.number}
+                      {q.sub_label ? `${q.number}${q.sub_label}` : q.number}
                     </button>
                   )
                 })}

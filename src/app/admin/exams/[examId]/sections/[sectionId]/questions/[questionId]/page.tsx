@@ -19,7 +19,9 @@ export default async function QuestionPage({ params }: Props) {
       admin.from('questions').select('*').eq('id', questionId).single(),
       admin.from('choices').select('*').eq('question_id', questionId).order('label'),
       admin.from('explanation_blocks').select('*').eq('question_id', questionId).order('block_order'),
-      admin.from('questions').select('id, number').eq('section_id', sectionId).order('number'),
+      admin.from('questions').select('id, number, display_label').eq('section_id', sectionId)
+        .order('number', { ascending: true })
+        .order('sub_label', { ascending: true, nullsFirst: true }),
     ])
 
   if (!question) {
@@ -46,7 +48,7 @@ export default async function QuestionPage({ params }: Props) {
           nextQuestion={nextQuestion}
         />
         <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-          Question {question.number}
+          Question {question.display_label ?? question.number}
         </h1>
       </div>
 

@@ -33,12 +33,13 @@ export default async function PracticeAttemptPage({ params, searchParams }: Prop
 
   if (!attempt) redirect('/practice')
 
-  // Load all questions for this exam, ordered by number
+  // Load all questions for this exam, ordered by (number, sub_label nulls first)
   const { data: questions } = await supabase
     .from('questions')
     .select('*, choices(*), explanation_blocks(*)')
     .eq('exam_id', attempt.exam_id)
-    .order('number')
+    .order('number', { ascending: true })
+    .order('sub_label', { ascending: true, nullsFirst: true })
 
   // Load existing answers for this attempt
   const { data: existingAnswers } = await supabase
@@ -75,15 +76,13 @@ export default async function PracticeAttemptPage({ params, searchParams }: Prop
     total_marks: number
   }
 
-  const initialQuestionNumber = q ? parseInt(q, 10) : undefined
-
   return (
     <PracticeShell
       attemptId={attemptId}
       exam={exam}
       questions={questionsWithSortedBlocks}
       initialAnswers={(existingAnswers ?? []) as UserAnswer[]}
-      initialQuestionNumber={initialQuestionNumber}
+      initialQuestionId={q}
     />
   )
 }
