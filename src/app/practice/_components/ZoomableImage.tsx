@@ -81,9 +81,10 @@ export function ZoomableImage({ src, alt, variant, className }: Props) {
       >
         {/* Skeleton */}
         {status === 'loading' && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse">
-            <span className="text-xs text-gray-400 dark:text-gray-500 select-none">
-              Loading image…
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-xl bg-slate-100 dark:bg-slate-800/60 animate-pulse">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 dark:border-slate-500 border-t-blue-400 dark:border-t-blue-400" />
+            <span className="text-xs text-slate-400 dark:text-slate-400 select-none">
+              Preparing image…
             </span>
           </div>
         )}
