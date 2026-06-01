@@ -142,7 +142,7 @@ export function ResetPasswordForm({ email: initialEmail }: { email: string }) {
             className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-3 py-2 text-sm tracking-widest text-center text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            Check your email for the 6–8 digit reset code.
+            Check your email for the digit reset code.
           </p>
         </div>
 
